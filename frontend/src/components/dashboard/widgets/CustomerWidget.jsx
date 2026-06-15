@@ -1,36 +1,35 @@
 import WidgetShell from '../../ui/WidgetShell';
-import { UserGroupIcon, UserPlusIcon, ArrowPathIcon, StarIcon } from '@heroicons/react/24/outline';
+import { UsersIcon } from '@heroicons/react/24/outline';
 
-const STATS = [
-  { key: 'new', label: 'New Customers', value: 24, icon: UserPlusIcon, color: 'from-blue-500 to-blue-600' },
-  { key: 'repeat', label: 'Repeat Customers', value: 168, icon: ArrowPathIcon, color: 'from-emerald-500 to-emerald-600' },
-  { key: 'loyalty', label: 'Loyalty Members', value: 89, icon: StarIcon, color: 'from-amber-500 to-amber-600', suffix: '' },
-  { key: 'total', label: 'Total Customers', value: 1256, icon: UserGroupIcon, color: 'from-violet-500 to-violet-600' },
-];
-
-export default function CustomerWidget({ data = {}, loading, onRemove, onRefresh, onResize, size }) {
+export default function CustomerWidget({ data = {}, loading, onRemove, onRefresh }) {
   const stats = {
-    new: data.newCustomers ?? 24,
-    repeat: data.repeatCustomers ?? 168,
-    loyalty: data.loyaltyMembers ?? 89,
-    total: data.totalCustomers ?? 1256,
+    total: data.total ?? 128,
+    active: data.active ?? 89,
+    new: data.new ?? 14,
+    returning: data.returning ?? 62,
   };
 
   return (
-    <WidgetShell title="Customers" subtitle="Customer insights" onRemove={onRemove} onRefresh={onRefresh} onResize={onResize} size={size} loading={loading}>
-      <div className="p-4 grid grid-cols-2 gap-3">
-        {STATS.map(s => {
-          const Icon = s.icon;
-          return (
-            <div key={s.key} className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-              <div className={`p-2 rounded-lg inline-flex bg-gradient-to-br ${s.color} text-white mb-2`}>
-                <Icon className="w-4 h-4" />
-              </div>
-              <p className="text-xl font-bold">{stats[s.key]}{s.suffix ?? ''}</p>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
-            </div>
-          );
-        })}
+    <WidgetShell title="Customers" subtitle="Customer analytics" icon={UsersIcon} onRemove={onRemove} onRefresh={onRefresh} loading={loading}>
+      <div className="space-y-3">
+        <div className="text-center py-2">
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{stats.total}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Customers</p>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          <div className="text-center p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <p className="text-sm font-bold text-blue-600 dark:text-blue-400">{stats.active}</p>
+            <p className="text-[10px] text-gray-400">Active</p>
+          </div>
+          <div className="text-center p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{stats.new}</p>
+            <p className="text-[10px] text-gray-400">New</p>
+          </div>
+          <div className="text-center p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+            <p className="text-sm font-bold text-violet-600 dark:text-violet-400">{stats.returning}</p>
+            <p className="text-[10px] text-gray-400">Returning</p>
+          </div>
+        </div>
       </div>
     </WidgetShell>
   );

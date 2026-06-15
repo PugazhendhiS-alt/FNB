@@ -1,176 +1,221 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, memo } from 'react';
 import { useRole } from '../../hooks/useRole';
 import ErrorBoundary from '../ErrorBoundary';
 import {
   SalesWidget, OrdersWidget, KitchenWidget, InventoryWidget,
   CustomerWidget, StaffWidget, PaymentWidget, NotificationWidget,
-  QuickActionsWidget,
 } from './widgets';
 import {
-  XMarkIcon, AdjustmentsHorizontalIcon,
+  AdjustmentsHorizontalIcon,
+  ChartBarIcon, ClipboardDocumentListIcon, CubeIcon, BuildingOffice2Icon,
 } from '@heroicons/react/24/outline';
 
-const ALL_SECTIONS = [
-  { id: 'sales', label: 'Sales Overview', Component: SalesWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER'] },
-  { id: 'orders', label: 'Orders', Component: OrdersWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
-  { id: 'kitchen', label: 'Kitchen', Component: KitchenWidget, roles: ['SUPERADMIN', 'ADMIN', 'RESTAURANT_MANAGER', 'CHEF'] },
-  { id: 'inventory', label: 'Inventory', Component: InventoryWidget, roles: ['SUPERADMIN', 'ADMIN', 'RESTAURANT_MANAGER'] },
-  { id: 'customers', label: 'Customers', Component: CustomerWidget, roles: ['SUPERADMIN', 'ADMIN'] },
-  { id: 'staff', label: 'Staff', Component: StaffWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER'] },
-  { id: 'payments', label: 'Payments', Component: PaymentWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER'] },
-  { id: 'notifications', label: 'Notifications', Component: NotificationWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
-  { id: 'quickActions', label: 'Quick Actions', Component: QuickActionsWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
+const ROWS = [
+  {
+    id: 'insights',
+    title: 'Business Insights',
+    subtitle: 'Revenue and order analytics',
+    icon: ChartBarIcon,
+    layout: '70-30',
+    widgets: [
+      { id: 'sales', Component: SalesWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER'] },
+      { id: 'orders', Component: OrdersWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
+    ],
+  },
+  {
+    id: 'operations',
+    title: 'Operational Dashboard',
+    subtitle: 'Kitchen status, popular items, recent orders',
+    icon: ClipboardDocumentListIcon,
+    layout: '3-col',
+    widgets: [
+      { id: 'kitchen', Component: KitchenWidget, roles: ['SUPERADMIN', 'ADMIN', 'RESTAURANT_MANAGER', 'CHEF'] },
+      { id: 'inventory', Component: InventoryWidget, roles: ['SUPERADMIN', 'ADMIN', 'RESTAURANT_MANAGER'] },
+      { id: 'customers', Component: CustomerWidget, roles: ['SUPERADMIN', 'ADMIN'] },
+    ],
+  },
+  {
+    id: 'management',
+    title: 'Management Overview',
+    subtitle: 'Buildings, restaurants, and staff',
+    icon: BuildingOffice2Icon,
+    layout: '3-col',
+    widgets: [
+      { id: 'notifications', Component: NotificationWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
+      { id: 'staff', Component: StaffWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER'] },
+      { id: 'payments', Component: PaymentWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER'] },
+    ],
+  },
 ];
 
-function getDefaultSections(currentRole) {
-  return ALL_SECTIONS
-    .filter(s => s.roles.includes(currentRole))
-    .slice(0, 4)
-    .map(s => s.id);
+const ROW_ICONS = { ChartBarIcon, ClipboardDocumentListIcon, CubeIcon, BuildingOffice2Icon };
+
+function loadHiddenRows() {
+  try {
+    const raw = localStorage.getItem('dashHiddenRows');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
 }
 
-const WIDGET_SIZES = {
-  sales: 'lg', orders: 'md', kitchen: 'md', inventory: 'md',
-  customers: 'md', staff: 'md', payments: 'md', notifications: 'md',
-  quickActions: 'sm',
-};
+function saveHiddenRows(ids) {
+  try { localStorage.setItem('dashHiddenRows', JSON.stringify(ids)); } catch {}
+}
 
-function WidgetWrapper({ section, data, size, customizing, toggleSection }) {
-  const Component = section.Component;
+function RowWidget({ widget, data }) {
+  const Component = widget.Component;
   return (
     <ErrorBoundary
-      message={`Failed to load "${section.label}" widget.`}
+      message={`Failed to load widget.`}
       fallback={
-        <div className="widget-card p-6 text-center">
-          <p className="text-sm text-gray-400">{section.label} widget unavailable</p>
+        <div className="bg-white dark:bg-gray-800/95 rounded-2xl border border-gray-100 dark:border-gray-700/50 p-8 text-center">
+          <p className="text-sm text-gray-400">Widget unavailable</p>
         </div>
       }
     >
-      <div className={size === 'lg' ? 'sm:col-span-2 xl:col-span-2' : size === 'xl' ? 'sm:col-span-2 xl:col-span-3' : ''}>
-        <Component
-          data={data}
-          size={size}
-          onRemove={customizing ? () => toggleSection(section.id) : undefined}
-        />
-      </div>
+      <Component data={data} />
     </ErrorBoundary>
   );
 }
 
-function loadSavedSections(currentRole) {
-  try {
-    const raw = localStorage.getItem('dashSections');
-    if (!raw) return null;
-    const parsed = JSON.parse(raw);
-    if (!Array.isArray(parsed)) return null;
-    const validIds = new Set(ALL_SECTIONS.filter(s => s.roles.includes(currentRole)).map(s => s.id));
-    const filtered = parsed.filter(id => validIds.has(id));
-    return filtered.length > 0 ? filtered : null;
-  } catch {
-    return null;
-  }
-}
+const RowWidgetMemo = memo(RowWidget);
 
-export default function DashboardWidgetSections({ data = {} }) {
+function DashboardRow({ row, data, editing, onToggle }) {
   const { currentRole } = useRole();
-  const [sections, setSections] = useState(() => {
-    return loadSavedSections(currentRole) || getDefaultSections(currentRole);
-  });
-  const [customizing, setCustomizing] = useState(false);
+  const Icon = ROW_ICONS[row.icon] || ChartBarIcon;
 
-  useEffect(() => {
-    if (currentRole) {
-      setSections(prev => loadSavedSections(currentRole) || getDefaultSections(currentRole));
-    }
-  }, [currentRole]);
+  const visibleWidgets = row.widgets.filter(w => w.roles.includes(currentRole));
+  if (visibleWidgets.length === 0) return null;
 
-  useEffect(() => {
-    try {
-      localStorage.setItem('dashSections', JSON.stringify(sections));
-    } catch {}
-  }, [sections]);
-
-  const availableSections = ALL_SECTIONS.filter(s => s.roles.includes(currentRole));
-
-  const toggleSection = useCallback((id) => {
-    setSections(prev => {
-      if (prev.includes(id)) return prev.filter(s => s !== id);
-      const section = ALL_SECTIONS.find(s => s.id === id);
-      if (!section) return prev;
-      return [...prev, id];
-    });
-  }, []);
-
-  const resetSections = useCallback(() => {
-    setSections(getDefaultSections(currentRole));
-  }, [currentRole]);
-
-  const visibleSections = availableSections.filter(s => sections.includes(s.id));
-
-  if (availableSections.length === 0) return null;
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="section-header">Dashboard Widgets</h2>
-        <div className="flex items-center gap-2">
-          {customizing && (
-            <button onClick={resetSections} className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 underline">
-              Reset
+  if (row.layout === '70-30') {
+    const [main, side] = visibleWidgets;
+    if (!main && !side) return null;
+    return (
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400">
+              <Icon className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{row.title}</h2>
+              {row.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500">{row.subtitle}</p>}
+            </div>
+          </div>
+          {editing && (
+            <button
+              onClick={() => onToggle(row.id)}
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              Hide Row
             </button>
           )}
-          <button
-            onClick={() => setCustomizing(!customizing)}
-            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
-              customizing
-                ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300'
-            }`}
-          >
-            <AdjustmentsHorizontalIcon className="w-3.5 h-3.5" />
-            {customizing ? 'Done' : 'Customize'}
-          </button>
         </div>
-      </div>
-
-      {customizing && (
-        <div className="card-base p-4 animate-slide-down">
-          <div className="flex flex-wrap gap-2">
-            {availableSections.map(s => (
-              <button
-                key={s.id}
-                onClick={() => toggleSection(s.id)}
-                className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
-                  sections.includes(s.id)
-                    ? 'bg-primary-50 text-primary-700 border-primary-200 dark:bg-primary-900/30 dark:text-primary-300 dark:border-primary-800'
-                    : 'bg-white text-gray-500 border-gray-200 hover:border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700 dark:hover:border-gray-600'
-                }`}
-              >
-                {sections.includes(s.id) ? '✓ ' : ''}{s.label}
-              </button>
-            ))}
+        <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
+          <div className="xl:col-span-3">
+            {main && <RowWidgetMemo key={main.id} widget={main} data={data} />}
+          </div>
+          <div className="xl:col-span-2">
+            {side && <RowWidgetMemo key={side.id} widget={side} data={data} />}
           </div>
         </div>
-      )}
+      </section>
+    );
+  }
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {visibleSections.map(s => (
-          <WidgetWrapper
-            key={s.id}
-            section={s}
-            data={data[s.id]}
-            size={WIDGET_SIZES[s.id] || 'md'}
-            customizing={customizing}
-            toggleSection={toggleSection}
-          />
-        ))}
+  if (row.layout === '3-col') {
+    return (
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 text-gray-500 dark:text-gray-400">
+              <Icon className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{row.title}</h2>
+              {row.subtitle && <p className="text-[11px] text-gray-400 dark:text-gray-500">{row.subtitle}</p>}
+            </div>
+          </div>
+          {editing && (
+            <button
+              onClick={() => onToggle(row.id)}
+              className="text-xs text-gray-400 hover:text-red-500 transition-colors px-2 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20"
+            >
+              Hide Row
+            </button>
+          )}
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {visibleWidgets.map(w => (
+            <RowWidgetMemo key={w.id} widget={w} data={data} />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  return null;
+}
+
+const DashboardRowMemo = memo(DashboardRow);
+
+export default function DashboardContent({ data = {} }) {
+  const { currentRole } = useRole();
+  const [hiddenRows, setHiddenRows] = useState(loadHiddenRows);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => { saveHiddenRows(hiddenRows); }, [hiddenRows]);
+
+  const visibleRows = ROWS.filter(r => {
+    const hasVisible = r.widgets.some(w => w.roles.includes(currentRole));
+    return hasVisible && !hiddenRows.includes(r.id);
+  });
+
+  if (visibleRows.length === 0) return null;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Dashboard</h2>
+        <button
+          onClick={() => setEditing(!editing)}
+          className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-xl transition-all ${
+            editing
+              ? 'bg-primary-50 text-primary-700 dark:bg-primary-900/40 dark:text-primary-300 border border-primary-200 dark:border-primary-800'
+              : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 dark:hover:text-gray-300 border border-transparent'
+          }`}
+        >
+          <AdjustmentsHorizontalIcon className="w-3.5 h-3.5" />
+          {editing ? 'Done' : 'Customize'}
+        </button>
       </div>
 
-      {visibleSections.length === 0 && (
-        <div className="text-center py-8 text-gray-400">
-          <p className="text-sm">No widgets enabled. Click Customize to add widgets.</p>
+      {editing && hiddenRows.length > 0 && (
+        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-xl px-4 py-2.5 text-xs text-amber-700 dark:text-amber-300 flex items-center gap-2">
+          <span>Hidden rows will not appear on the dashboard.</span>
+          <button
+            onClick={() => setHiddenRows([])}
+            className="font-semibold underline hover:no-underline"
+          >
+            Restore all
+          </button>
         </div>
       )}
+
+      {visibleRows.map(row => (
+        <DashboardRowMemo
+          key={row.id}
+          row={row}
+          data={data}
+          editing={editing}
+          onToggle={(id) => {
+            setHiddenRows(prev => prev.includes(id) ? prev.filter(h => h !== id) : [...prev, id]);
+          }}
+        />
+      ))}
     </div>
   );
 }

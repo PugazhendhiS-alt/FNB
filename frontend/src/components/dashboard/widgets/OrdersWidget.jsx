@@ -1,6 +1,6 @@
 import WidgetShell from '../../ui/WidgetShell';
 import { formatCurrency } from '../../../lib/utils';
-import { ClockIcon, CheckCircleIcon, XCircleIcon, BanknotesIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, CheckCircleIcon, XCircleIcon, BanknotesIcon, ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 
 const ITEMS = [
   { key: 'active', label: 'Active Orders', icon: ClockIcon, color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300' },
@@ -9,7 +9,7 @@ const ITEMS = [
   { key: 'aov', label: 'Avg Order Value', icon: BanknotesIcon, color: 'text-violet-600 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-300' },
 ];
 
-export default function OrdersWidget({ data = {}, loading, onRemove, onRefresh, onResize, size }) {
+export default function OrdersWidget({ data = {}, loading, onRemove, onRefresh }) {
   const stats = {
     active: data.active ?? 12,
     completed: data.completed ?? 48,
@@ -18,8 +18,8 @@ export default function OrdersWidget({ data = {}, loading, onRemove, onRefresh, 
   };
 
   return (
-    <WidgetShell title="Orders" subtitle="Order statistics" onRemove={onRemove} onRefresh={onRefresh} onResize={onResize} size={size} loading={loading}>
-      <div className="p-4 grid grid-cols-2 gap-3">
+    <WidgetShell title="Orders Summary" subtitle="Order statistics" icon={ClipboardDocumentListIcon} onRemove={onRemove} onRefresh={onRefresh} loading={loading}>
+      <div className="grid grid-cols-2 gap-2">
         {ITEMS.map(item => {
           const Icon = item.icon;
           const val = stats[item.key];
@@ -28,7 +28,7 @@ export default function OrdersWidget({ data = {}, loading, onRemove, onRefresh, 
               <div className={`p-2 rounded-lg inline-flex ${item.color} mb-2`}>
                 <Icon className="w-4 h-4" />
               </div>
-              <p className="text-xl font-bold">{item.key === 'aov' ? formatCurrency(val) : val}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{item.key === 'aov' ? formatCurrency(val) : val}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{item.label}</p>
             </div>
           );

@@ -1,33 +1,73 @@
-﻿import { useState, useCallback } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRole } from '../hooks/useRole';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
-import WidgetGrid from '../components/dashboard/WidgetGrid';
-import DashboardWidgetSections from '../components/dashboard/DashboardWidgetSections';
-import PrimaryMetricsBar from '../components/dashboard/PrimaryMetricsBar';
+import KPIGrid from '../components/dashboard/KPIGrid';
+import QuickActionsBar from '../components/dashboard/QuickActionsBar';
+import DashboardContent from '../components/dashboard/DashboardWidgetSections';
 import DashboardFilters, { FilterToggleButton } from '../components/dashboard/DashboardFilters';
-import { FullPageSkeleton } from '../components/dashboard/LoadingState';
-import ErrorState from '../components/dashboard/ErrorState';
-import { ShoppingBagIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import ErrorBoundary from '../components/ErrorBoundary';
+import { widgetAPI } from '../api/endpoints';
+import { ChartBarIcon } from '@heroicons/react/24/outline';
+
+const WIDGET_TYPE_TO_KPI = {
+  stats_total_users: 'total_users',
+  stats_buildings: 'buildings',
+  stats_restaurants: 'restaurants',
+  stats_orders: 'orders',
+  stats_revenue: 'revenue',
+  stats_pending_orders: 'pending_orders',
+};
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [dateRange, setDateRange] = useState('7d');
   const [initialLoading, setInitialLoading] = useState(true);
-  const [dashboardError, setDashboardError] = useState(null);
-  const { isSuperadmin, currentRole, isCustomer, isAdmin } = useRole();
+  const [kpiLoading, setKpiLoading] = useState(true);
+  const { isSuperadmin, currentRole, isCustomer } = useRole();
   const navigate = useNavigate();
+  const metricsRef = useRef(false);
 
-  const handleMetricsUpdate = useCallback((m) => {
-    setMetrics(m);
-    setInitialLoading(false);
-  }, []);
+  useEffect(() => {
+    let cancelled = false;
 
-  const handleError = useCallback((err) => {
-    setDashboardError(err);
-    setInitialLoading(false);
+    async function loadMetrics() {
+      setKpiLoading(true);
+      try {
+        const res = await widgetAPI.getWidgets();
+        if (cancelled) return;
+        const items = res.data;
+        const statWidgets = items.filter(w => w.displayType === 'stat_card');
+        if (statWidgets.length === 0) {
+          setKpiLoading(false);
+          return;
+        }
+        const ids = statWidgets.map(w => w.id);
+        const dataRes = await widgetAPI.batchData(ids);
+        if (cancelled) return;
+        const data = dataRes.data || {};
+        const mapped = statWidgets.map(w => ({
+          key: WIDGET_TYPE_TO_KPI[w.widgetType] || w.widgetType,
+          value: data[w.id]?.value ?? 0,
+          trend: data[w.id]?.trend,
+          trendLabel: data[w.id]?.trendLabel,
+          currency: w.widgetType === 'stats_revenue' || w.customSource === 'total_revenue' || w.customSource === 'avg_order_value',
+        }));
+        setMetrics(mapped);
+      } catch {
+        // silent - use defaults
+      } finally {
+        if (!cancelled) {
+          setKpiLoading(false);
+          setInitialLoading(false);
+        }
+      }
+    }
+
+    loadMetrics();
+    return () => { cancelled = true; };
   }, []);
 
   if (isCustomer) {
@@ -47,11 +87,11 @@ export default function Dashboard() {
             onClick={() => navigate('/restaurants')}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm"
           >
-            <ShoppingBagIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">Order Now</span>
+            <ChartBarIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">View Menus</span>
           </button>
         </div>
-        <WidgetGrid onMetricsUpdate={handleMetricsUpdate} />
+        <DashboardContent />
       </div>
     );
   }
@@ -65,6 +105,7 @@ export default function Dashboard() {
         actions={
           <>
             <Badge variant="purple" className="text-xs">{currentRole}</Badge>
+            <QuickActionsBar />
             <FilterToggleButton open={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} />
           </>
         }
@@ -76,22 +117,11 @@ export default function Dashboard() {
         onDateChange={setDateRange}
       />
 
-      {metrics.length > 0 && (
-        <div className="animate-in">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="section-header">Key Metrics</h2>
-          </div>
-          <PrimaryMetricsBar metrics={metrics} />
-        </div>
-      )}
+      <KPIGrid metrics={metrics} loading={kpiLoading} />
 
-      <div>
-        <WidgetGrid onMetricsUpdate={handleMetricsUpdate} />
-      </div>
-
-      <hr className="border-gray-200 dark:border-gray-700/50" />
-
-      <DashboardWidgetSections />
+      <ErrorBoundary message="A dashboard section failed to load.">
+        <DashboardContent />
+      </ErrorBoundary>
     </div>
   );
 }

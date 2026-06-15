@@ -1,61 +1,34 @@
 import WidgetShell from '../../ui/WidgetShell';
-import { formatCurrency } from '../../../lib/utils';
-import { ExclamationTriangleIcon, XCircleIcon, CubeIcon } from '@heroicons/react/24/outline';
+import { CubeIcon } from '@heroicons/react/24/outline';
 
-export default function InventoryWidget({ data = {}, loading, onRemove, onRefresh, onResize, size }) {
-  const lowStock = data.lowStock ?? [
-    { name: 'Tomatoes', qty: 5, unit: 'kg', threshold: 20 },
-    { name: 'Cheese', qty: 2, unit: 'kg', threshold: 10 },
-    { name: 'Olive Oil', qty: 3, unit: 'L', threshold: 15 },
-  ];
-  const outOfStock = data.outOfStock ?? ['Mozzarella', 'Basil', 'Parmesan'];
-  const inventoryValue = data.inventoryValue ?? 285000;
+const CATEGORIES = [
+  { key: 'veggies', label: 'Vegetables', pct: 72, color: 'bg-emerald-500' },
+  { key: 'meat', label: 'Meat & Poultry', pct: 45, color: 'bg-rose-500' },
+  { key: 'dairy', label: 'Dairy', pct: 60, color: 'bg-amber-500' },
+  { key: 'beverages', label: 'Beverages', pct: 85, color: 'bg-blue-500' },
+  { key: 'dry', label: 'Dry Goods', pct: 40, color: 'bg-violet-500' },
+];
+
+export default function InventoryWidget({ data = {}, loading, onRemove, onRefresh }) {
+  const items = data?.inventory ?? CATEGORIES;
 
   return (
-    <WidgetShell title="Inventory" subtitle="Stock overview" onRemove={onRemove} onRefresh={onRefresh} onResize={onResize} size={size} loading={loading}>
-      <div className="p-4 space-y-4">
-        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 text-white">
-              <CubeIcon className="w-4 h-4" />
+    <WidgetShell title="Inventory" subtitle="Stock levels" icon={CubeIcon} onRemove={onRemove} onRefresh={onRefresh} loading={loading}>
+      <div className="space-y-2.5">
+        {items.map((item, i) => (
+          <div key={item.key || i}>
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{item.label}</span>
+              <span className="text-xs text-gray-400">{item.pct}%</span>
             </div>
-            <div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Inventory Value</p>
-              <p className="text-lg font-bold">{formatCurrency(inventoryValue)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div className="flex items-center gap-1.5 mb-2">
-            <ExclamationTriangleIcon className="w-3.5 h-3.5 text-amber-500" />
-            <p className="text-xs font-semibold text-amber-600 dark:text-amber-400">Low Stock</p>
-          </div>
-          <div className="space-y-1.5">
-            {lowStock.map((item, i) => (
-              <div key={i} className="flex items-center justify-between text-sm px-2.5 py-1.5 rounded-lg bg-amber-50 dark:bg-amber-900/20">
-                <span className="font-medium">{item.name}</span>
-                <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">{item.qty}/{item.threshold} {item.unit}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {outOfStock.length > 0 && (
-          <div>
-            <div className="flex items-center gap-1.5 mb-2">
-              <XCircleIcon className="w-3.5 h-3.5 text-red-500" />
-              <p className="text-xs font-semibold text-red-600 dark:text-red-400">Out of Stock</p>
-            </div>
-            <div className="flex flex-wrap gap-1.5">
-              {outOfStock.map((name, i) => (
-                <span key={i} className="text-xs px-2 py-1 rounded-full bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 font-medium">
-                  {name}
-                </span>
-              ))}
+            <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${item.color}`}
+                style={{ width: `${item.pct}%` }}
+              />
             </div>
           </div>
-        )}
+        ))}
       </div>
     </WidgetShell>
   );

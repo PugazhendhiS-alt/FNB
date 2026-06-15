@@ -1,42 +1,50 @@
 import WidgetShell from '../../ui/WidgetShell';
 import { formatCurrency } from '../../../lib/utils';
+import { BanknotesIcon, CreditCardIcon, WalletIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
 
-const PAYMENTS = [
-  { key: 'cash', label: 'Cash', value: 125000, pct: 28, color: 'bg-emerald-500' },
-  { key: 'card', label: 'Card', value: 185000, pct: 41, color: 'bg-blue-500' },
-  { key: 'upi', label: 'UPI', value: 98000, pct: 22, color: 'bg-violet-500' },
-  { key: 'wallet', label: 'Wallet', value: 42000, pct: 9, color: 'bg-amber-500' },
+const METHODS = [
+  { key: 'card', label: 'Card Payments', icon: CreditCardIcon, color: 'text-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-300' },
+  { key: 'cash', label: 'Cash Payments', icon: WalletIcon, color: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-300' },
+  { key: 'online', label: 'Online Payments', icon: BuildingLibraryIcon, color: 'text-violet-600 bg-violet-50 dark:bg-violet-900/30 dark:text-violet-300' },
 ];
 
-export default function PaymentWidget({ data = {}, loading, onRemove, onRefresh, onResize, size }) {
-  const payments = data.payments ?? PAYMENTS;
-  const total = payments.reduce((sum, p) => sum + p.value, 0);
+export default function PaymentWidget({ data = {}, loading, onRemove, onRefresh }) {
+  const stats = {
+    total: data.total ?? 284500,
+    card: data.card ?? 145000,
+    cash: data.cash ?? 82500,
+    online: data.online ?? 57000,
+  };
 
   return (
-    <WidgetShell title="Payments" subtitle="Payment method breakdown" onRemove={onRemove} onRefresh={onRefresh} onResize={onResize} size={size} loading={loading}>
-      <div className="p-4 space-y-3">
-        <div className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-          <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Collected</span>
-          <span className="text-lg font-bold">{formatCurrency(total)}</span>
-        </div>
-        <div className="flex gap-0.5 h-2 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-700">
-          {payments.map(p => (
-            <div key={p.key} className={`${p.color} transition-all duration-500`} style={{ width: `${p.pct}%` }} />
-          ))}
+    <WidgetShell title="Payments" subtitle="Payment breakdown" icon={BanknotesIcon} onRemove={onRemove} onRefresh={onRefresh} loading={loading}>
+      <div className="space-y-3">
+        <div className="text-center py-2">
+          <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats.total)}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Revenue</p>
         </div>
         <div className="space-y-2">
-          {payments.map(p => (
-            <div key={p.key} className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${p.color}`} />
-                <span className="text-gray-600 dark:text-gray-400">{p.label}</span>
+          {METHODS.map(m => {
+            const Icon = m.icon;
+            const val = stats[m.key];
+            const pct = stats.total > 0 ? Math.round((val / stats.total) * 100) : 0;
+            return (
+              <div key={m.key} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div className={`p-1.5 rounded-lg ${m.color} flex-shrink-0`}>
+                    <Icon className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium text-gray-700 dark:text-gray-300">{m.label}</p>
+                    <div className="h-1.5 bg-gray-200 dark:bg-gray-600 rounded-full mt-1 max-w-[80px]">
+                      <div className="h-full rounded-full bg-gray-400 dark:bg-gray-500" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                </div>
+                <span className="text-xs font-semibold text-gray-900 dark:text-white flex-shrink-0 ml-2">{formatCurrency(val)}</span>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-medium">{formatCurrency(p.value)}</span>
-                <span className="text-xs text-gray-400 w-8 text-right">{p.pct}%</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </WidgetShell>

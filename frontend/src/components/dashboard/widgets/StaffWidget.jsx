@@ -1,42 +1,35 @@
 import WidgetShell from '../../ui/WidgetShell';
-import { UserIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { UserGroupIcon } from '@heroicons/react/24/outline';
 
-const CASHIERS = [
-  { name: 'Rajesh K.', orders: 34, rating: 4.8, active: true },
-  { name: 'Priya S.', orders: 28, rating: 4.6, active: true },
-  { name: 'Amit R.', orders: 22, rating: 4.5, active: false },
-  { name: 'Sneha M.', orders: 19, rating: 4.7, active: false },
+const ROLES = [
+  { key: 'admin', label: 'Admins', count: 3, color: 'bg-blue-500' },
+  { key: 'manager', label: 'Managers', count: 8, color: 'bg-amber-500' },
+  { key: 'chef', label: 'Chefs', count: 15, color: 'bg-violet-500' },
+  { key: 'staff', label: 'Staff', count: 24, color: 'bg-emerald-500' },
 ];
 
-export default function StaffWidget({ data = {}, loading, onRemove, onRefresh, onResize, size }) {
-  const staff = data.staff ?? CASHIERS;
-  const activeCount = staff.filter(s => s.active).length;
-  const totalOrders = staff.reduce((sum, s) => sum + s.orders, 0);
+export default function StaffWidget({ data = {}, loading, onRemove, onRefresh }) {
+  const roles = data?.roles ?? ROLES;
+  const total = roles.reduce((s, r) => s + r.count, 0);
 
   return (
-    <WidgetShell title="Staff" subtitle={`${activeCount} active · ${totalOrders} orders today`} onRemove={onRemove} onRefresh={onRefresh} onResize={onResize} size={size} loading={loading}>
-      <div className="p-4 space-y-2">
-        {staff.map((s, i) => (
-          <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-            <div className="flex items-center gap-2.5">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white ${
-                s.active ? 'bg-gradient-to-br from-primary-500 to-primary-600' : 'bg-gray-300 dark:bg-gray-600'
-              }`}>
-                {s.name.charAt(0)}
-              </div>
-              <div>
-                <p className="text-sm font-medium">{s.name}</p>
-                <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <span className="flex items-center gap-0.5"><ClockIcon className="w-3 h-3" /> {s.orders}</span>
-                  <span>★ {s.rating}</span>
-                </div>
+    <WidgetShell title="Staff" subtitle="Team overview" icon={UserGroupIcon} onRemove={onRemove} onRefresh={onRefresh} loading={loading}>
+      <div className="space-y-3">
+        <div className="text-center py-2">
+          <p className="text-3xl font-bold text-gray-900 dark:text-white">{total}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Total Staff</p>
+        </div>
+        <div className="space-y-2">
+          {roles.map(r => (
+            <div key={r.key} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+              <span className="text-xs font-medium text-gray-700 dark:text-gray-300">{r.label}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-gray-900 dark:text-white">{r.count}</span>
+                <div className={`w-2 h-2 rounded-full ${r.color}`} />
               </div>
             </div>
-            {s.active && (
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse-soft" title="Active" />
-            )}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </WidgetShell>
   );

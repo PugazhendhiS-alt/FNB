@@ -5,13 +5,13 @@ import {
 } from '@heroicons/react/24/outline';
 
 const METRICS = [
-  { key: 'today', label: 'Today\'s Sales', color: 'from-blue-500 to-blue-600', icon: CurrencyDollarIcon },
+  { key: 'today', label: "Today's Sales", color: 'from-blue-500 to-blue-600', icon: ArrowTrendingUpIcon },
   { key: 'weekly', label: 'Weekly Sales', color: 'from-emerald-500 to-emerald-600', icon: ArrowTrendingUpIcon },
   { key: 'monthly', label: 'Monthly Sales', color: 'from-violet-500 to-violet-600', icon: ArrowTrendingUpIcon },
   { key: 'revenue', label: 'Revenue Trend', color: 'from-amber-500 to-amber-600', icon: ArrowTrendingUpIcon },
 ];
 
-export default function SalesWidget({ data = {}, loading, onRemove, onRefresh, onResize, size }) {
+export default function SalesWidget({ data = {}, loading, onRemove, onRefresh }) {
   const stats = {
     today: { value: data.today ?? 48250, trend: '+12.5%' },
     weekly: { value: data.weekly ?? 285000, trend: '+8.3%' },
@@ -20,24 +20,24 @@ export default function SalesWidget({ data = {}, loading, onRemove, onRefresh, o
   };
 
   return (
-    <WidgetShell title="Sales Overview" subtitle="Revenue summary" onRemove={onRemove} onRefresh={onRefresh} onResize={onResize} size={size} loading={loading}>
-      <div className="p-4 space-y-3">
+    <WidgetShell title="Revenue Chart" subtitle="Sales overview" icon={CurrencyDollarIcon} onRemove={onRemove} onRefresh={onRefresh} loading={loading}>
+      <div className="space-y-2">
         {METRICS.map(m => {
           const Icon = m.icon;
           const stat = stats[m.key];
           const isUp = stat.trend.startsWith('+');
           return (
             <div key={m.key} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-              <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg bg-gradient-to-br ${m.color} text-white`}>
+              <div className="flex items-center gap-3 min-w-0 flex-1">
+                <div className={`p-2 rounded-lg bg-gradient-to-br ${m.color} text-white flex-shrink-0`}>
                   <Icon className="w-4 h-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-gray-500 dark:text-gray-400">{m.label}</p>
-                  <p className="text-base font-bold mt-0.5">{formatCurrency(stat.value)}</p>
+                  <p className="text-base font-bold mt-0.5 text-gray-900 dark:text-white">{formatCurrency(stat.value)}</p>
                 </div>
               </div>
-              <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${
+              <span className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full flex-shrink-0 ml-3 ${
                 isUp ? 'text-emerald-700 bg-emerald-50 dark:text-emerald-300 dark:bg-emerald-900/30' : 'text-red-700 bg-red-50 dark:text-red-300 dark:bg-red-900/30'
               }`}>
                 {isUp ? <ArrowTrendingUpIcon className="w-3 h-3" /> : <ArrowTrendingDownIcon className="w-3 h-3" />}
