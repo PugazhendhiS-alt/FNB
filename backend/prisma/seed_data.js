@@ -37,13 +37,13 @@ async function main() {
 
   // --- ADD PHONE NUMBERS to all users for OTP ---
   const phones = {
-    'Superadmin': '+1-555-1000',
-    'admin1': '+1-555-1001',
-    'bldmgr1': '+1-555-1002',
-    'restmgr1': '+1-555-1003',
-    'restmgr2': '+1-555-1004',
-    'chef1': '+1-555-1005',
-    'customer1': '+1-555-1006',
+    'Superadmin': '+91-9876543210',
+    'admin1': '+91-9876543211',
+    'bldmgr1': '+91-9876543212',
+    'restmgr1': '+91-9876543213',
+    'restmgr2': '+91-9876543214',
+    'chef1': '+91-9876543215',
+    'customer1': '+91-9876543216',
   };
 
   for (const u of users) {
@@ -61,9 +61,9 @@ async function main() {
   const adminPwd = await bcrypt.hash('admin123', 10);
 
   const extraUsers = [
-    { username: 'customer2', email: 'customer2@pos.com', role: 'CUSTOMER', phone: '+1-555-2001' },
-    { username: 'customer3', email: 'customer3@pos.com', role: 'CUSTOMER', phone: '+1-555-2002' },
-    { username: 'chef2', email: 'chef2@pos.com', role: 'CHEF', phone: '+1-555-2003', restaurantId: restaurants.find(r => r.name === 'Sushi World')?.id },
+    { username: 'customer2', email: 'customer2@pos.com', role: 'CUSTOMER', phone: '+91-9876543221' },
+    { username: 'customer3', email: 'customer3@pos.com', role: 'CUSTOMER', phone: '+91-9876543222' },
+    { username: 'chef2', email: 'chef2@pos.com', role: 'CHEF', phone: '+91-9876543223', restaurantId: restaurants.find(r => r.name === 'Roll & Wok')?.id },
   ];
 
   for (const eu of extraUsers) {
@@ -80,17 +80,17 @@ async function main() {
 
   // --- ADD MORE MENU ITEMS ---
   const extraMenu = [
-    { name: 'Chicken Tikka Masala', description: 'Grilled chicken in spiced cream sauce', price: 15.99, category: 'Main Course', restaurantName: 'Spice Kitchen' },
-    { name: 'Lamb Korma', description: 'Slow-cooked lamb in rich nut sauce', price: 17.99, category: 'Main Course', restaurantName: 'Spice Kitchen' },
-    { name: 'Mango Lassi', description: 'Creamy yogurt mango drink', price: 3.99, category: 'Beverage', restaurantName: 'Spice Kitchen' },
-    { name: 'Hawaiian Pizza', description: 'Pineapple, ham, mozzarella', price: 12.99, category: 'Pizza', restaurantName: 'Pizza Paradise' },
-    { name: 'BBQ Chicken Pizza', description: 'Tangy BBQ sauce, chicken, red onion', price: 14.99, category: 'Pizza', restaurantName: 'Pizza Paradise' },
-    { name: 'Tiramisu', description: 'Classic Italian coffee dessert', price: 6.99, category: 'Dessert', restaurantName: 'Pizza Paradise' },
-    { name: 'Dragon Roll', description: 'Shrimp tempura, eel, avocado', price: 12.99, category: 'Sushi', restaurantName: 'Sushi World' },
-    { name: 'Miso Soup', description: 'Traditional Japanese soy soup with tofu', price: 3.99, category: 'Soup', restaurantName: 'Sushi World' },
-    { name: 'Green Tea Ice Cream', description: 'Matcha flavored ice cream', price: 4.49, category: 'Dessert', restaurantName: 'Sushi World' },
-    { name: 'Chicken Burger', description: 'Grilled chicken with lettuce and mayo', price: 9.99, category: 'Burgers', restaurantName: 'Burger Hub' },
-    { name: 'Veggie Wrap', description: 'Fresh vegetables in whole wheat wrap', price: 7.99, category: 'Wraps', restaurantName: 'Healthy Bites' },
+    { name: 'Paneer Butter Masala', description: 'Rich creamy paneer in tomato gravy', price: 299, category: 'Main Course', restaurantName: 'Tandoori Tadka' },
+    { name: 'Dal Makhani', description: 'Slow-cooked black lentils with cream', price: 249, category: 'Main Course', restaurantName: 'Tandoori Tadka' },
+    { name: 'Mango Lassi', description: 'Creamy yogurt mango drink', price: 99, category: 'Beverage', restaurantName: 'Tandoori Tadka' },
+    { name: 'Rava Dosa', description: 'Crispy semolina crepe with chutney', price: 179, category: 'South Indian', restaurantName: 'Dosa Express' },
+    { name: 'Onion Uttapam', description: 'Thick rice pancake with onions', price: 149, category: 'South Indian', restaurantName: 'Dosa Express' },
+    { name: 'Gulab Jamun (2 pcs)', description: 'Deep-fried milk dumplings in sugar syrup', price: 79, category: 'Dessert', restaurantName: 'Dosa Express' },
+    { name: 'Paneer Kathi Roll', description: 'Spiced paneer wrapped in paratha', price: 199, category: 'Rolls', restaurantName: 'Roll & Wok' },
+    { name: 'Sweet Corn Soup', description: 'Hot and sweet corn soup with veggies', price: 129, category: 'Soup', restaurantName: 'Roll & Wok' },
+    { name: 'Kulfi Falooda', description: 'Indian ice cream with vermicelli and rose syrup', price: 149, category: 'Dessert', restaurantName: 'Roll & Wok' },
+    { name: 'Chicken Roll', description: 'Spiced chicken wrapped in rumali roti', price: 179, category: 'Rolls', restaurantName: 'Roll & Wok' },
+    { name: 'Mix Veg Wrap', description: 'Fresh vegetables in whole wheat wrap', price: 129, category: 'Wraps', restaurantName: 'Tandoori Tadka' },
   ];
 
   for (const em of extraMenu) {
@@ -169,7 +169,7 @@ async function main() {
           },
         },
       });
-      console.log(`  Order ${orderCode}: ${status}, $${order.totalAmount}, ${rest.name}`);
+      console.log(`  Order ${orderCode}: ${status}, ₹${order.totalAmount}, ${rest.name}`);
     }
   }
 
@@ -208,9 +208,9 @@ async function main() {
   console.log('  Superadmin / Admin12345 (all access)');
   console.log('  admin1 / admin123 (Admin)');
   console.log('  bldmgr1 / manager123 (Building Manager)');
-  console.log('  restmgr1 / manager123 (Restaurant Manager - Spice Kitchen)');
-  console.log('  restmgr2 / manager123 (Restaurant Manager - Pizza Paradise)');
-  console.log('  chef1 / chef123 (Chef - Spice Kitchen)');
+  console.log('  restmgr1 / manager123 (Restaurant Manager - Tandoori Tadka)');
+  console.log('  restmgr2 / manager123 (Restaurant Manager - Dosa Express)');
+  console.log('  chef1 / chef123 (Chef - Tandoori Tadka)');
   console.log('  customer1 / customer123 (Customer)');
   console.log('  customer2 / customer123 (Customer)');
   console.log('\nOTP login available: all users have phone numbers');

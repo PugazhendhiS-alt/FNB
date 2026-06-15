@@ -32,12 +32,12 @@ async function main() {
     return prisma.restaurant.create({ data: { id: uuidv4(), name, description, cuisine, phone, buildingId: building.id } });
   };
 
-  const building1 = await buildBuilding('Downtown Food Court', '123 Main Street, Downtown', '+1-555-0101', 'Main downtown food court with multiple restaurants');
-  const building2 = await buildBuilding('Mall Food Plaza', '456 Shopping Ave, Mall Complex', '+1-555-0102', 'Food plaza inside the city mall');
+  const building1 = await buildBuilding('Cyber City Food Court', 'Plot 12, Sector 24, Gurugram', '+91-124-4567890', 'Premium food court in Cyber City tech hub');
+  const building2 = await buildBuilding('Phoenix Mall Food Plaza', '3rd Floor, Phoenix Mall, Lower Parel, Mumbai', '+91-22-6789012', 'Food plaza inside Phoenix Marketcity Mall');
 
-  const restaurant1 = await buildRestaurant('Spice Kitchen', 'Authentic Indian cuisine with a modern twist', 'Indian', '+1-555-0201', building1);
-  const restaurant2 = await buildRestaurant('Pizza Paradise', 'Wood-fired pizzas and Italian classics', 'Italian', '+1-555-0202', building1);
-  const restaurant3 = await buildRestaurant('Sushi World', 'Fresh Japanese sushi and ramen', 'Japanese', '+1-555-0203', building2);
+  const restaurant1 = await buildRestaurant('Tandoori Tadka', 'Authentic North Indian cuisine with a modern twist', 'North Indian', '+91-124-4567891', building1);
+  const restaurant2 = await buildRestaurant('Dosa Express', 'South Indian classics and filter coffee', 'South Indian', '+91-124-4567892', building1);
+  const restaurant3 = await buildRestaurant('Roll & Wok', 'Asian fusion rolls and street food', 'Asian', '+91-22-6789013', building2);
 
   const adminPassword = await bcrypt.hash('admin123', 10);
   const managerPassword = await bcrypt.hash('manager123', 10);
@@ -62,18 +62,18 @@ async function main() {
   }
 
   const menuItems = [
-    { name: 'Butter Chicken', description: 'Creamy tomato-based curry with tender chicken', price: 14.99, category: 'Main Course', restaurantId: restaurant1.id },
-    { name: 'Biryani', description: 'Fragrant basmati rice with spiced meat', price: 12.99, category: 'Main Course', restaurantId: restaurant1.id },
-    { name: 'Naan Bread', description: 'Traditional tandoor-baked bread', price: 3.49, category: 'Bread', restaurantId: restaurant1.id },
-    { name: 'Samosa (3 pcs)', description: 'Crispy pastry filled with spiced potatoes', price: 5.99, category: 'Appetizer', restaurantId: restaurant1.id },
-    { name: 'Margherita Pizza', description: 'Classic tomato, mozzarella, basil', price: 11.99, category: 'Pizza', restaurantId: restaurant2.id },
-    { name: 'Pepperoni Pizza', description: 'Loaded with pepperoni and mozzarella', price: 13.99, category: 'Pizza', restaurantId: restaurant2.id },
-    { name: 'Pasta Carbonara', description: 'Creamy pasta with bacon and parmesan', price: 10.99, category: 'Pasta', restaurantId: restaurant2.id },
-    { name: 'Garlic Bread', description: 'Toasted bread with garlic butter', price: 4.99, category: 'Appetizer', restaurantId: restaurant2.id },
-    { name: 'California Roll', description: 'Crab, avocado, cucumber inside-out roll', price: 8.99, category: 'Sushi', restaurantId: restaurant3.id },
-    { name: 'Salmon Nigiri', description: 'Fresh salmon over seasoned rice', price: 6.99, category: 'Sushi', restaurantId: restaurant3.id },
-    { name: 'Tonkotsu Ramen', description: 'Rich pork broth ramen with chashu', price: 12.99, category: 'Ramen', restaurantId: restaurant3.id },
-    { name: 'Edamame', description: 'Steamed soybeans with sea salt', price: 4.49, category: 'Appetizer', restaurantId: restaurant3.id },
+    { name: 'Butter Chicken', description: 'Creamy tomato-based curry with tender chicken', price: 349, category: 'Main Course', restaurantId: restaurant1.id },
+    { name: 'Chicken Biryani', description: 'Fragrant basmati rice with spiced chicken', price: 299, category: 'Main Course', restaurantId: restaurant1.id },
+    { name: 'Garlic Naan', description: 'Tandoor-baked bread brushed with garlic butter', price: 49, category: 'Bread', restaurantId: restaurant1.id },
+    { name: 'Veg Samosa (3 pcs)', description: 'Crispy pastry filled with spiced potatoes', price: 79, category: 'Appetizer', restaurantId: restaurant1.id },
+    { name: 'Masala Dosa', description: 'Crispy rice crepe with spiced potato filling', price: 199, category: 'South Indian', restaurantId: restaurant2.id },
+    { name: 'Idli Sambar (2 pcs)', description: 'Steamed rice cakes with lentil soup and chutney', price: 129, category: 'South Indian', restaurantId: restaurant2.id },
+    { name: 'Filter Coffee', description: 'South Indian style filter coffee', price: 49, category: 'Beverage', restaurantId: restaurant2.id },
+    { name: 'Vada Pav', description: 'Spiced potato fritter in a bun with chutney', price: 59, category: 'Street Food', restaurantId: restaurant2.id },
+    { name: 'Egg Roll', description: 'Kolkata-style egg roll with onions and chutney', price: 149, category: 'Rolls', restaurantId: restaurant3.id },
+    { name: 'Chicken Tikka Wrap', description: 'Tandoori chicken wrapped in paratha', price: 249, category: 'Rolls', restaurantId: restaurant3.id },
+    { name: 'Hakka Noodles', description: 'Stir-fried noodles with vegetables', price: 179, category: 'Asian', restaurantId: restaurant3.id },
+    { name: 'Gobi Manchurian', description: 'Crispy cauliflower in spicy soy-ginger sauce', price: 159, category: 'Appetizer', restaurantId: restaurant3.id },
   ];
 
   for (const item of menuItems) {
@@ -105,11 +105,11 @@ async function main() {
             userId: u.id,
             cardNumber,
             pin: cardPin,
-            balance: 250.00,
+            balance: 5000,
             isActive: true,
           },
         });
-        console.log(`Food Card created for ${username}: ****${cardNumber.slice(-4)} with $250.00 balance`);
+        console.log(`Food Card created for ${username}: ****${cardNumber.slice(-4)} with ₹5,000 balance`);
       }
     }
   }
