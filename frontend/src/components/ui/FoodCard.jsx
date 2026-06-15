@@ -1,5 +1,5 @@
 import { formatCurrency } from '../../lib/utils';
-import { PencilIcon, TrashIcon, DocumentDuplicateIcon } from '@heroicons/react/24/outline';
+import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 function VegBadge({ isVeg }) {
   return (
@@ -11,7 +11,7 @@ function VegBadge({ isVeg }) {
 
 export default function FoodCard({
   item,
-  onEdit, onDelete, onDuplicate, onToggleAvailable, onOrder,
+  onEdit, onDelete, onToggleAvailable, onOrder,
   view = 'grid', // 'grid' | 'list'
   isCustomer = false,
 }) {
@@ -68,7 +68,6 @@ export default function FoodCard({
         {!isCustomer && (
           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
             {onEdit && <button onClick={() => onEdit(item)} className="btn-ghost-icon"><PencilIcon className="w-4 h-4" /></button>}
-            {onDuplicate && <button onClick={() => onDuplicate(item)} className="btn-ghost-icon"><DocumentDuplicateIcon className="w-4 h-4" /></button>}
             {onDelete && <button onClick={() => onDelete(item)} className="btn-ghost-icon hover:!text-red-500"><TrashIcon className="w-4 h-4" /></button>}
           </div>
         )}
@@ -107,7 +106,6 @@ export default function FoodCard({
         {!isCustomer && (
           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             {onEdit && <button onClick={() => onEdit(item)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"><PencilIcon className="w-3.5 h-3.5 text-gray-700" /></button>}
-            {onDuplicate && <button onClick={() => onDuplicate(item)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"><DocumentDuplicateIcon className="w-3.5 h-3.5 text-gray-700" /></button>}
             {onDelete && <button onClick={() => onDelete(item)} className="p-1.5 bg-white/90 backdrop-blur-sm rounded-lg shadow-sm hover:bg-white transition-colors"><TrashIcon className="w-3.5 h-3.5 text-red-500" /></button>}
           </div>
         )}

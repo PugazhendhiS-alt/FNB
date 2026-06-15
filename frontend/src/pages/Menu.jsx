@@ -263,7 +263,6 @@ export default function Menu() {
                   onEdit={canManageMenu ? openEdit : undefined}
                   onDelete={canManageMenu ? handleDelete : undefined}
                   onToggleAvailable={canManageMenu ? toggleAvailable : undefined}
-                  onDuplicate={canManageMenu ? (i) => { setForm({ ...form, name: `${i.name} (copy)`, restaurantId: i.restaurantId }); setModalOpen(true); } : undefined}
                 />
               ))}
               {items.length === 0 && (
@@ -280,7 +279,6 @@ export default function Menu() {
                   onEdit={canManageMenu ? openEdit : undefined}
                   onDelete={canManageMenu ? handleDelete : undefined}
                   onToggleAvailable={canManageMenu ? toggleAvailable : undefined}
-                  onDuplicate={canManageMenu ? (i) => { setForm({ ...form, name: `${i.name} (copy)`, restaurantId: i.restaurantId }); setModalOpen(true); } : undefined}
                 />
               ))}
               {items.length === 0 && (
