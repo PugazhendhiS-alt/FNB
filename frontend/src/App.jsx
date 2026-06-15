@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Layout from './components/layout/Layout';
+import ErrorBoundary from './components/ErrorBoundary';
 
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
@@ -28,14 +29,17 @@ function PrivateRoute({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600" />
+          <p className="text-sm text-gray-400 animate-pulse-soft">Loading...</p>
+        </div>
       </div>
     );
   }
   return user ? children : <Navigate to="/login" />;
 }
 
-export default function App() {
+function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Suspense fallback={<PageLoading />}><Login /></Suspense>} />
@@ -55,5 +59,13 @@ export default function App() {
         <Route path="users" element={<Suspense fallback={<PageLoading />}><Users /></Suspense>} />
       </Route>
     </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <ErrorBoundary message="Application failed to initialize. Please refresh the page.">
+      <AppRoutes />
+    </ErrorBoundary>
   );
 }

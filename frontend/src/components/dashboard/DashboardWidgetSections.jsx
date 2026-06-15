@@ -1,12 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRole } from '../../hooks/useRole';
+import ErrorBoundary from '../ErrorBoundary';
 import {
   SalesWidget, OrdersWidget, KitchenWidget, InventoryWidget,
   CustomerWidget, StaffWidget, PaymentWidget, NotificationWidget,
   QuickActionsWidget,
 } from './widgets';
 import {
-  Cog6ToothIcon, XMarkIcon, AdjustmentsHorizontalIcon,
+  XMarkIcon, AdjustmentsHorizontalIcon,
 } from '@heroicons/react/24/outline';
 
 const ALL_SECTIONS = [
@@ -34,27 +35,70 @@ const WIDGET_SIZES = {
   quickActions: 'sm',
 };
 
+function WidgetWrapper({ section, data, size, customizing, toggleSection }) {
+  const Component = section.Component;
+  return (
+    <ErrorBoundary
+      message={`Failed to load "${section.label}" widget.`}
+      fallback={
+        <div className="widget-card p-6 text-center">
+          <p className="text-sm text-gray-400">{section.label} widget unavailable</p>
+        </div>
+      }
+    >
+      <div className={size === 'lg' ? 'sm:col-span-2 xl:col-span-2' : size === 'xl' ? 'sm:col-span-2 xl:col-span-3' : ''}>
+        <Component
+          data={data}
+          size={size}
+          onRemove={customizing ? () => toggleSection(section.id) : undefined}
+        />
+      </div>
+    </ErrorBoundary>
+  );
+}
+
+function loadSavedSections(currentRole) {
+  try {
+    const raw = localStorage.getItem('dashSections');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    const validIds = new Set(ALL_SECTIONS.filter(s => s.roles.includes(currentRole)).map(s => s.id));
+    const filtered = parsed.filter(id => validIds.has(id));
+    return filtered.length > 0 ? filtered : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function DashboardWidgetSections({ data = {} }) {
   const { currentRole } = useRole();
   const [sections, setSections] = useState(() => {
-    try {
-      const saved = localStorage.getItem('dashSections');
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return getDefaultSections(currentRole);
+    return loadSavedSections(currentRole) || getDefaultSections(currentRole);
   });
   const [customizing, setCustomizing] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('dashSections', JSON.stringify(sections));
+    if (currentRole) {
+      setSections(prev => loadSavedSections(currentRole) || getDefaultSections(currentRole));
+    }
+  }, [currentRole]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dashSections', JSON.stringify(sections));
+    } catch {}
   }, [sections]);
 
   const availableSections = ALL_SECTIONS.filter(s => s.roles.includes(currentRole));
 
   const toggleSection = useCallback((id) => {
-    setSections(prev =>
-      prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]
-    );
+    setSections(prev => {
+      if (prev.includes(id)) return prev.filter(s => s !== id);
+      const section = ALL_SECTIONS.find(s => s.id === id);
+      if (!section) return prev;
+      return [...prev, id];
+    });
   }, []);
 
   const resetSections = useCallback(() => {
@@ -110,22 +154,16 @@ export default function DashboardWidgetSections({ data = {} }) {
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-        {visibleSections.map(s => {
-          const Component = s.Component;
-          const size = WIDGET_SIZES[s.id] || 'md';
-          return (
-            <div
-              key={s.id}
-              className={size === 'lg' ? 'sm:col-span-2 xl:col-span-2' : size === 'xl' ? 'sm:col-span-2 xl:col-span-3' : ''}
-            >
-              <Component
-                data={data[s.id]}
-                size={size}
-                onRemove={customizing ? () => toggleSection(s.id) : undefined}
-              />
-            </div>
-          );
-        })}
+        {visibleSections.map(s => (
+          <WidgetWrapper
+            key={s.id}
+            section={s}
+            data={data[s.id]}
+            size={WIDGET_SIZES[s.id] || 'md'}
+            customizing={customizing}
+            toggleSection={toggleSection}
+          />
+        ))}
       </div>
 
       {visibleSections.length === 0 && (

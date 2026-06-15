@@ -1,23 +1,49 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../api/endpoints';
+import { withTimeout } from '../api/client';
 
 const AuthContext = createContext(null);
 
+function safeGetItem(key, fallback = null) {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return fallback;
+  }
+}
+
+function safeRemoveItem(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch {}
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token'));
+  const [user, setUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [token, setToken] = useState(safeGetItem('token'));
   const [loading, setLoading] = useState(true);
-  const [isGuest, setIsGuest] = useState(localStorage.getItem('isGuest') === 'true');
+  const [isGuest, setIsGuest] = useState(safeGetItem('isGuest') === 'true');
 
   useEffect(() => {
     if (token) {
-      authAPI.getProfile()
-        .then((res) => setUser(res.data))
+      withTimeout(authAPI.getProfile(), 10000)
+        .then((res) => {
+          setUser(res.data);
+          try { localStorage.setItem('user', JSON.stringify(res.data)); } catch {}
+        })
         .catch(() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('isGuest');
+          safeRemoveItem('token');
+          safeRemoveItem('user');
+          safeRemoveItem('isGuest');
           setToken(null);
+          setUser(null);
           setIsGuest(false);
         })
         .finally(() => setLoading(false));
@@ -28,9 +54,11 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => {
     const res = await authAPI.login({ username, password });
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    localStorage.removeItem('isGuest');
+    try {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      localStorage.removeItem('isGuest');
+    } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(false);
@@ -45,9 +73,11 @@ export function AuthProvider({ children }) {
 
   const verifyOtp = async (userId, code) => {
     const res = await authAPI.verifyOtp(userId, code);
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    localStorage.removeItem('isGuest');
+    try {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      localStorage.removeItem('isGuest');
+    } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(false);
@@ -56,9 +86,11 @@ export function AuthProvider({ children }) {
 
   const guestLogin = async (data) => {
     const res = await authAPI.guestLogin(data);
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    localStorage.setItem('isGuest', 'true');
+    try {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      localStorage.setItem('isGuest', 'true');
+    } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(true);
@@ -67,9 +99,11 @@ export function AuthProvider({ children }) {
 
   const register = async (data) => {
     const res = await authAPI.register(data);
-    localStorage.setItem('token', res.data.token);
-    localStorage.setItem('user', JSON.stringify(res.data.user));
-    localStorage.removeItem('isGuest');
+    try {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      localStorage.removeItem('isGuest');
+    } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(false);
@@ -77,9 +111,9 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('isGuest');
+    safeRemoveItem('token');
+    safeRemoveItem('user');
+    safeRemoveItem('isGuest');
     setToken(null);
     setUser(null);
     setIsGuest(false);
@@ -87,7 +121,9 @@ export function AuthProvider({ children }) {
 
   const switchRole = async (role) => {
     const res = await authAPI.switchRole(role);
-    localStorage.setItem('token', res.data.token);
+    try {
+      localStorage.setItem('token', res.data.token);
+    } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
     return res.data;
