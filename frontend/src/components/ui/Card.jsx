@@ -1,6 +1,9 @@
-﻿export default function Card({ children, className = '', ...props }) {
+﻿export default function Card({ children, className = '', hover = false, ...props }) {
   return (
-    <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 ${className}`} {...props}>
+    <div
+      className={`${hover ? 'card-hover' : 'card-base'} ${className}`}
+      {...props}
+    >
       {children}
     </div>
   );

@@ -4,11 +4,12 @@ import { useRole } from '../hooks/useRole';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
 import WidgetGrid from '../components/dashboard/WidgetGrid';
+import DashboardWidgetSections from '../components/dashboard/DashboardWidgetSections';
 import PrimaryMetricsBar from '../components/dashboard/PrimaryMetricsBar';
 import DashboardFilters, { FilterToggleButton } from '../components/dashboard/DashboardFilters';
 import { FullPageSkeleton } from '../components/dashboard/LoadingState';
 import ErrorState from '../components/dashboard/ErrorState';
-import { ShoppingBagIcon, ChartBarIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { ShoppingBagIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState([]);
@@ -32,9 +33,9 @@ export default function Dashboard() {
   if (isCustomer) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md shadow-primary-500/10">
               <ChartBarIcon className="w-5 h-5" />
             </div>
             <div>
@@ -44,7 +45,7 @@ export default function Dashboard() {
           </div>
           <button
             onClick={() => navigate('/restaurants')}
-            className="btn-primary text-sm py-2 px-4 flex items-center gap-2"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm"
           >
             <ShoppingBagIcon className="w-4 h-4" />
             <span className="hidden sm:inline">Order Now</span>
@@ -69,27 +70,28 @@ export default function Dashboard() {
         }
       />
 
-      {/* ── Filters ── */}
       <DashboardFilters
         open={filtersOpen}
         dateRange={dateRange}
         onDateChange={setDateRange}
       />
 
-      {/* ── Primary Metrics ── */}
       {metrics.length > 0 && (
-        <div>
+        <div className="animate-in">
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Key Metrics</h2>
+            <h2 className="section-header">Key Metrics</h2>
           </div>
           <PrimaryMetricsBar metrics={metrics} />
         </div>
       )}
 
-      {/* ── Widget Content Area ── */}
       <div>
         <WidgetGrid onMetricsUpdate={handleMetricsUpdate} />
       </div>
+
+      <hr className="border-gray-200 dark:border-gray-700/50" />
+
+      <DashboardWidgetSections />
     </div>
   );
 }

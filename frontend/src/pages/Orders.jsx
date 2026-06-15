@@ -76,21 +76,21 @@ export default function Orders() {
         icon={ClipboardDocumentListIcon}
       />
 
-      <div className="flex overflow-x-auto gap-2 pb-2">
-        {STATUS_TABS.map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
-              activeTab === tab
-                ? 'bg-primary-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
-            }`}
-          >
-            {getStatusLabel(tab) === tab ? tab.replace(/_/g, ' ') : getStatusLabel(tab)}
-          </button>
-        ))}
-      </div>
+        <div className="flex overflow-x-auto gap-2 pb-2 scrollbar-none">
+          {STATUS_TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                activeTab === tab
+                  ? 'bg-primary-600 text-white shadow-sm shadow-primary-500/20'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700'
+              }`}
+            >
+              {getStatusLabel(tab) === tab ? tab.replace(/_/g, ' ') : getStatusLabel(tab)}
+            </button>
+          ))}
+        </div>
 
       <div className="space-y-4">
         {filtered.length === 0 ? (
@@ -98,8 +98,9 @@ export default function Orders() {
             <p className="text-gray-400">No orders found</p>
           </Card>
         ) : (
-          filtered.map(order => (
-            <Card key={order.id} className="overflow-hidden">
+          filtered.map((order, idx) => (
+            <div key={order.id} className="animate-in" style={{ animationDelay: `${idx * 50}ms` }}>
+            <Card className="overflow-hidden">
               <div
                 className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/30"
                 onClick={() => setExpandedId(expandedId === order.id ? null : order.id)}
@@ -108,7 +109,7 @@ export default function Orders() {
                   <div className="flex items-center gap-3">
                     <div>
                       <p className="font-medium">Order #{order.orderCode?.slice(0, 8)}</p>
-                      <p className="text-xs text-gray-400">{order.restaurant?.name} • {formatDate(order.createdAt)}</p>
+                      <p className="text-xs text-gray-400">{order.restaurant?.name} · {formatDate(order.createdAt)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
@@ -149,6 +150,7 @@ export default function Orders() {
                 )}
               </div>
             </Card>
+            </div>
           ))
         )}
       </div>

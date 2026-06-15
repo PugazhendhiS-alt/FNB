@@ -10,8 +10,13 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
+import FoodCard from '../components/ui/FoodCard';
 import { formatCurrency } from '../lib/utils';
-import { PlusIcon, PencilIcon, TrashIcon, ShoppingCartIcon, FunnelIcon, RectangleStackIcon } from '@heroicons/react/24/outline';
+import {
+  PlusIcon, PencilIcon, TrashIcon, ShoppingCartIcon,
+  FunnelIcon, RectangleStackIcon, Squares2X2Icon,
+  ListBulletIcon, AdjustmentsHorizontalIcon,
+} from '@heroicons/react/24/outline';
 
 export default function Menu() {
   const { restaurantId } = useParams();
@@ -25,7 +30,12 @@ export default function Menu() {
   const [form, setForm] = useState({ name: '', description: '', price: '', category: '', restaurantId: '' });
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [filterRestaurantId, setFilterRestaurantId] = useState('');
+  const [viewMode, setViewMode] = useState(() => localStorage.getItem('menuView') || 'grid');
   const { canManageMenu, isCustomer, isRestaurantManager } = useRole();
+
+  useEffect(() => {
+    localStorage.setItem('menuView', viewMode);
+  }, [viewMode]);
 
   useEffect(() => {
     if (restaurantId) {
@@ -125,7 +135,7 @@ export default function Menu() {
     <div className="space-y-6">
       <PageHeader
         title={restaurant ? restaurant.name : 'Menu Items'}
-        subtitle={restaurant?.description || 'Browse and manage menu items'}
+        subtitle={restaurant?.description || (isCustomer ? 'Browse our delicious menu' : 'Browse and manage menu items')}
         icon={RectangleStackIcon}
         actions={
           <>
@@ -143,90 +153,124 @@ export default function Menu() {
 
       {isCustomer && restaurant ? (
         <div className="space-y-6">
-          {categories.map(cat => (
-            <div key={cat}>
-              <h2 className="text-lg font-semibold mb-3 text-primary-600">{cat}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.filter(i => i.category === cat && i.available).map(item => (
-                  <Card key={item.id} className="p-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-medium">{item.name}</h3>
-                        {item.description && <p className="text-xs text-gray-500 mt-1">{item.description}</p>}
-                      </div>
-                      <p className="text-lg font-bold text-primary-600">{formatCurrency(item.price)}</p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {['grid', 'list'].map(m => (
+                <button
+                  key={m}
+                  onClick={() => setViewMode(m)}
+                  className={`p-1.5 rounded-lg transition-colors ${
+                    viewMode === m
+                      ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                  title={`${m === 'grid' ? 'Grid' : 'List'} view`}
+                >
+                  {m === 'grid' ? <Squares2X2Icon className="w-4 h-4" /> : <ListBulletIcon className="w-4 h-4" />}
+                </button>
+              ))}
             </div>
-          ))}
-          {items.filter(i => i.available).length === 0 && (
-            <Card className="p-8 text-center">
-              <p className="text-gray-400">No menu items available</p>
+          </div>
+
+          {viewMode === 'category' || viewMode === 'grid' ? (
+            categories.map(cat => (
+              <div key={cat} className="animate-in">
+                <h2 className="text-lg font-semibold mb-3 text-primary-600 dark:text-primary-400 flex items-center gap-2">
+                  <span className="w-1 h-5 rounded-full bg-primary-500" />
+                  {cat}
+                </h2>
+                <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+                  {items.filter(i => i.category === cat && i.available !== false).map(item => (
+                    <FoodCard key={item.id} item={item} view="grid" isCustomer onOrder={() => navigate(`/checkout/${restaurantId}`)} />
+                  ))}
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="space-y-2 animate-in">
+              {items.filter(i => i.available !== false).map(item => (
+                <FoodCard key={item.id} item={item} view="list" isCustomer onOrder={() => navigate(`/checkout/${restaurantId}`)} />
+              ))}
+            </div>
+          )}
+
+          {items.filter(i => i.available !== false).length === 0 && (
+            <Card className="p-8 sm:p-12 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <RectangleStackIcon className="w-8 h-8 text-gray-400" />
+              </div>
+              <p className="text-gray-500 font-medium">No menu items available</p>
+              <p className="text-xs text-gray-400 mt-1">Check back later for new items</p>
             </Card>
           )}
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
-            <FunnelIcon className="w-4 h-4 text-gray-400" />
-            <select
-              value={filterRestaurantId}
-              onChange={(e) => handleFilterChange(e.target.value)}
-              className="input-field w-auto max-w-xs text-sm"
-            >
-              <option value="">All Restaurants</option>
-              {allRestaurants.map(r => (
-                <option key={r.id} value={r.id}>{r.name}</option>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FunnelIcon className="w-4 h-4 text-gray-400" />
+              <select
+                value={filterRestaurantId}
+                onChange={(e) => handleFilterChange(e.target.value)}
+                className="input-field w-auto max-w-xs text-sm"
+              >
+                <option value="">All Restaurants</option>
+                {allRestaurants.map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
+              <span className="text-xs text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">{items.length} items</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {['grid', 'list'].map(m => (
+                <button
+                  key={m}
+                  onClick={() => setViewMode(m)}
+                  className={`p-1.5 rounded-lg transition-colors ${
+                    viewMode === m
+                      ? 'bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-400'
+                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {m === 'grid' ? <Squares2X2Icon className="w-4 h-4" /> : <ListBulletIcon className="w-4 h-4" />}
+                </button>
               ))}
-            </select>
-            <span className="text-xs text-gray-400">{items.length} items</span>
+            </div>
           </div>
-          <Card className="p-4 sm:p-6">
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-900">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Restaurant</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Available</th>
-                    {canManageMenu && <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {items.map(item => (
-                    <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-4 py-3">
-                        <p className="text-sm font-medium">{item.name}</p>
-                        {item.description && <p className="text-xs text-gray-400">{item.description}</p>}
-                      </td>
-                      <td className="px-4 py-3 text-sm text-gray-500">{item.restaurant?.name || '-'}</td>
-                      <td className="px-4 py-3 text-sm">{item.category || '-'}</td>
-                      <td className="px-4 py-3 text-sm font-medium">{formatCurrency(item.price)}</td>
-                      <td className="px-4 py-3">
-                        <Badge variant={item.available ? 'success' : 'danger'}>{item.available ? 'Available' : 'Unavailable'}</Badge>
-                      </td>
-                      {canManageMenu && (
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <button onClick={() => openEdit(item)} className="p-1 hover:text-primary-600"><PencilIcon className="w-4 h-4" /></button>
-                            <button onClick={() => toggleAvailable(item)} className="p-1 hover:text-yellow-600 text-xs">{item.available ? 'Hide' : 'Show'}</button>
-                            <button onClick={() => handleDelete(item.id)} className="p-1 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>
-                          </div>
-                        </td>
-                      )}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {items.map(item => (
+                <FoodCard
+                  key={item.id}
+                  item={item}
+                  view="grid"
+                  onEdit={canManageMenu ? openEdit : undefined}
+                  onDelete={canManageMenu ? handleDelete : undefined}
+                  onDuplicate={canManageMenu ? (i) => { setForm({ ...form, name: `${i.name} (copy)`, restaurantId: i.restaurantId }); setModalOpen(true); } : undefined}
+                />
+              ))}
+              {items.length === 0 && (
+                <div className="col-span-full text-center py-12 text-gray-400 text-sm">No menu items found</div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {items.map(item => (
+                <FoodCard
+                  key={item.id}
+                  item={item}
+                  view="list"
+                  onEdit={canManageMenu ? openEdit : undefined}
+                  onDelete={canManageMenu ? handleDelete : undefined}
+                  onDuplicate={canManageMenu ? (i) => { setForm({ ...form, name: `${i.name} (copy)`, restaurantId: i.restaurantId }); setModalOpen(true); } : undefined}
+                />
+              ))}
               {items.length === 0 && (
                 <div className="text-center py-12 text-gray-400 text-sm">No menu items found</div>
               )}
             </div>
-          </Card>
+          )}
         </div>
       )}
 

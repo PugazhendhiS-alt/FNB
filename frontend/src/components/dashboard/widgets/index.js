@@ -1,0 +1,9 @@
+export { default as SalesWidget } from './SalesWidget';
+export { default as OrdersWidget } from './OrdersWidget';
+export { default as KitchenWidget } from './KitchenWidget';
+export { default as InventoryWidget } from './InventoryWidget';
+export { default as CustomerWidget } from './CustomerWidget';
+export { default as StaffWidget } from './StaffWidget';
+export { default as PaymentWidget } from './PaymentWidget';
+export { default as NotificationWidget } from './NotificationWidget';
+export { default as QuickActionsWidget } from './QuickActionsWidget';
