@@ -108,11 +108,13 @@ export const SIDEBAR_LINKS = {
   ],
   RESTAURANT_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
     { path: '/menu', label: 'Menu', icon: 'RectangleStackIcon' },
     { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },
   ],
   CHEF: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
   ],
   CUSTOMER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
