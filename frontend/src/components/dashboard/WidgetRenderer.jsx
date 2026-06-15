@@ -1,12 +1,17 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import DashboardWidget from '../ui/DashboardWidget';
 import Badge from '../ui/Badge';
+import Button from '../ui/Button';
+import Card from '../ui/Card';
 import { formatCurrency, formatDate, getStatusLabel, getStatusStyle } from '../../lib/utils';
 import { ROLE_LABELS } from '../../lib/constants';
+import { foodCardAPI } from '../../api/endpoints';
 import {
   UsersIcon, BuildingOffice2Icon, BuildingStorefrontIcon, ShoppingBagIcon,
   CurrencyDollarIcon, ClockIcon, CubeIcon, ChartBarIcon, UserGroupIcon,
+  IdentificationIcon, PlusIcon, ArrowPathIcon, BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 const ICONS = {
@@ -73,6 +78,142 @@ function RankBadge({ rank }) {
 
 const RankBadgeMemo = memo(RankBadge);
 
+function FoodCardView({ data, onRefresh }) {
+  const [showRecharge, setShowRecharge] = useState(false);
+  const [rechargeAmount, setRechargeAmount] = useState('');
+  const [rechargePin, setRechargePin] = useState('');
+  const [recharging, setRecharging] = useState(false);
+
+  if (!data) {
+    return (
+      <div className="flex flex-col items-center justify-center py-6 text-gray-400">
+        <IdentificationIcon className="w-12 h-12 mb-2 opacity-50" />
+        <p className="text-sm font-medium">No Food Card</p>
+        <p className="text-xs mt-1">Create one from the payment page</p>
+      </div>
+    );
+  }
+
+  const handleRecharge = async () => {
+    const amount = parseFloat(rechargeAmount);
+    if (!amount || amount <= 0) return toast.error('Enter a valid amount');
+    if (!rechargePin) return toast.error('Enter your PIN');
+    setRecharging(true);
+    try {
+      const res = await foodCardAPI.topUp({ amount, pin: rechargePin });
+      toast.success(res.data.message);
+      setShowRecharge(false);
+      setRechargeAmount('');
+      setRechargePin('');
+      onRefresh?.();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Top-up failed');
+    } finally {
+      setRecharging(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-3 sm:p-4 text-white">
+        <div className="flex items-center justify-between mb-1">
+          <p className="text-[10px] uppercase tracking-wider opacity-80 font-medium">Available Balance</p>
+          <IdentificationIcon className="w-4 h-4 opacity-60" />
+        </div>
+        <p className="text-2xl sm:text-3xl font-bold tracking-tight">{formatCurrency(data.balance || 0)}</p>
+        <div className="flex items-center justify-between mt-2">
+          <p className="text-[10px] opacity-70">****{data.cardNumber?.slice(-4) || '----'}</p>
+          <div className="flex items-center gap-1 text-[10px] opacity-70">
+            <span className="w-1.5 h-1.5 rounded-full bg-green-300 inline-block" />
+            {data.isActive ? 'Active' : 'Inactive'}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2">
+        <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2 text-center">
+          <p className="text-xs text-green-700 dark:text-green-300 font-bold">
+            {formatCurrency(data.totalToppedUp || 0)}
+          </p>
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Top-ups</p>
+        </div>
+        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-2 text-center">
+          <p className="text-xs text-blue-700 dark:text-blue-300 font-bold">
+            {formatCurrency(data.totalSpent || 0)}
+          </p>
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Spent</p>
+        </div>
+        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-2 text-center">
+          <p className="text-xs text-purple-700 dark:text-purple-300 font-bold">{data.ordersPaid || 0}</p>
+          <p className="text-[10px] text-gray-500 dark:text-gray-400">Orders</p>
+        </div>
+      </div>
+
+      {showRecharge ? (
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 space-y-2 border border-gray-200 dark:border-gray-700">
+          <p className="text-xs font-semibold">Top Up Card</p>
+          <input
+            type="number"
+            placeholder="Amount"
+            value={rechargeAmount}
+            onChange={e => setRechargeAmount(e.target.value)}
+            className="input-field text-sm"
+            min="1"
+            step="0.01"
+          />
+          <input
+            type="password"
+            maxLength={6}
+            inputMode="numeric"
+            placeholder="Enter PIN"
+            value={rechargePin}
+            onChange={e => setRechargePin(e.target.value.replace(/\D/g, ''))}
+            className="input-field text-sm"
+          />
+          <div className="flex gap-2">
+            <Button onClick={handleRecharge} disabled={recharging} size="sm" className="flex-1 text-xs py-2">
+              {recharging ? 'Processing...' : 'Add Money'}
+            </Button>
+            <button onClick={() => { setShowRecharge(false); setRechargeAmount(''); setRechargePin(''); }}
+              className="px-2 text-xs text-gray-500 hover:text-gray-700">
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setShowRecharge(true)}
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-lg bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-sm font-medium hover:bg-primary-100 dark:hover:bg-primary-900/50 transition-colors">
+          <PlusIcon className="w-4 h-4" />
+          Top Up Card
+        </button>
+      )}
+
+      {data.transactions?.length > 0 && (
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold mb-1.5">Recent Transactions</p>
+          <div className="space-y-1 max-h-28 overflow-y-auto">
+            {data.transactions.slice(0, 5).map(tx => (
+              <div key={tx.id} className="flex items-center justify-between py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${tx.type === 'TOPUP' ? 'bg-green-400' : tx.type === 'PAYMENT' ? 'bg-blue-400' : 'bg-gray-400'}`} />
+                  <p className="text-[11px] text-gray-600 dark:text-gray-400 truncate">
+                    {tx.type === 'TOPUP' ? 'Top-up' : tx.type === 'PAYMENT' ? `Payment` : tx.type}
+                  </p>
+                </div>
+                <span className={`text-[11px] font-medium flex-shrink-0 ml-2 ${tx.type === 'TOPUP' ? 'text-green-600' : 'text-gray-700 dark:text-gray-300'}`}>
+                  {tx.type === 'TOPUP' ? '+' : '-'}{formatCurrency(tx.amount)}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const FoodCardViewMemo = memo(FoodCardView);
+
 const widgetIconMap = {
   stats_total_users: 'UsersIcon', stats_buildings: 'BuildingOffice2Icon',
   stats_restaurants: 'BuildingStorefrontIcon', stats_orders: 'ShoppingBagIcon',
@@ -83,6 +224,7 @@ const widgetIconMap = {
   buildings_list: 'BuildingOffice2Icon', restaurants_list: 'BuildingStorefrontIcon',
   quick_actions: 'ChartBarIcon', building_reports: 'BuildingOffice2Icon',
   restaurant_reports: 'BuildingStorefrontIcon', revenue_chart: 'ChartBarIcon',
+  food_card_overview: 'IdentificationIcon',
 };
 
 function getWidgetIcon(widgetType) {
@@ -334,8 +476,8 @@ function RevenueChartView({ data }) {
 
 const RevenueChartViewMemo = memo(RevenueChartView);
 
-function renderContent(widgetType, displayType, data, config) {
-  if (!data) return <p className="text-sm text-gray-400 text-center py-4">No data</p>;
+function renderContent(widgetType, displayType, data, config, onRefresh) {
+  if (!data && widgetType !== 'food_card_overview') return <p className="text-sm text-gray-400 text-center py-4">No data</p>;
 
   switch (widgetType) {
     case 'custom': return <CustomWidgetContent data={data} displayType={displayType} config={config} />;
@@ -357,6 +499,7 @@ function renderContent(widgetType, displayType, data, config) {
     case 'building_reports': return <BuildingReportsViewMemo data={data?.data} />;
     case 'restaurant_reports': return <RestaurantReportsViewMemo data={data?.data} />;
     case 'revenue_chart': return <RevenueChartViewMemo data={data?.data} />;
+    case 'food_card_overview': return <FoodCardViewMemo data={data} onRefresh={onRefresh} />;
     default: return <p className="text-sm text-gray-400 text-center py-4">Unknown widget</p>;
   }
 }
@@ -375,7 +518,7 @@ function CustomWidgetContent({ data, displayType, config }) {
 
 const CustomWidgetContentMemo = memo(CustomWidgetContent);
 
-export default memo(function WidgetRenderer({ widget, data, loading, onRemove, onSettings }) {
+export default memo(function WidgetRenderer({ widget, data, loading, onRemove, onSettings, onRefresh }) {
   const { title, widgetType, displayType, config } = widget;
   const color = config?.color || 'blue';
   const icon = getWidgetIcon(widgetType);
@@ -384,7 +527,7 @@ export default memo(function WidgetRenderer({ widget, data, loading, onRemove, o
     return <DashboardWidget title={title} icon={icon} color={color} loading />;
   }
 
-  const content = renderContent(widgetType, displayType, data, config);
+  const content = renderContent(widgetType, displayType, data, config, onRefresh);
 
   return (
     <DashboardWidget

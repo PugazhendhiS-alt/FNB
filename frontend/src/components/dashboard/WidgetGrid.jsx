@@ -10,7 +10,7 @@ import { widgetAPI } from '../../api/endpoints';
 import { useRole } from '../../hooks/useRole';
 import {
   Cog6ToothIcon, ArrowPathIcon, CheckIcon,
-  Bars3Icon, XMarkIcon,
+  Bars3Icon, XMarkIcon, ArrowUturnLeftIcon,
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
@@ -107,6 +107,17 @@ export default function WidgetGrid({ onMetricsUpdate }) {
     setRefreshing(false);
   }, [loadWidgets]);
 
+  const handleRefreshWidget = useCallback(async (widgetId) => {
+    const w = widgets.find(w => w.id === widgetId);
+    if (!w) return;
+    try {
+      const res = await widgetAPI.batchData([widgetId]);
+      setWidgetData(prev => ({ ...prev, [widgetId]: res.data[widgetId] }));
+    } catch (err) {
+      console.error('Failed to refresh widget:', err);
+    }
+  }, [widgets]);
+
   const handleRemoveWidget = useCallback(async (widgetId) => {
     try {
       await widgetAPI.deleteWidget(widgetId);
@@ -199,6 +210,39 @@ export default function WidgetGrid({ onMetricsUpdate }) {
     }
   }, []);
 
+  const restoreDefaultLayout = useCallback(async () => {
+    if (!confirm('Reset all widgets to default layout? This cannot be undone.')) return;
+    setSaving(true);
+    try {
+      const res = await widgetAPI.getWidgets();
+      const defaults = res.data;
+      const updates = defaults.map((w, i) => {
+        const def = getDefaultSize(w.displayType);
+        return widgetAPI.updateWidget(w.id, {
+          layout: { x: (i * def.w) % GRID_COLS.lg, y: Math.floor((i * def.w) / GRID_COLS.lg) * 2, w: def.w, h: def.h },
+          position: i,
+        });
+      });
+      await Promise.all(updates);
+      toast.success('Layout restored to default');
+      loadWidgets();
+    } catch (err) {
+      toast.error('Failed to restore layout');
+    } finally {
+      setSaving(false);
+    }
+  }, [loadWidgets]);
+
+  const hideWidget = useCallback(async (widgetId) => {
+    try {
+      await widgetAPI.deleteWidget(widgetId);
+      setWidgets(prev => prev.filter(w => w.id !== widgetId));
+      toast.success('Widget hidden');
+    } catch (err) {
+      toast.error('Failed to hide widget');
+    }
+  }, []);
+
   if (loading) return <WidgetSkeleton count={4} />;
   if (error) return <ErrorState message={error} onRetry={loadWidgets} />;
 
@@ -220,34 +264,62 @@ export default function WidgetGrid({ onMetricsUpdate }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end gap-2">
-        <button onClick={handleRefresh} disabled={refreshing} className="btn-secondary text-sm flex items-center gap-2 py-1.5 px-3">
-          <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </button>
-        <button onClick={() => setShowManager(true)} className="btn-secondary text-sm flex items-center gap-2 py-1.5 px-3">
-          <Cog6ToothIcon className="w-4 h-4" /> Customize
-        </button>
-        <button
-          onClick={toggleEditMode}
-          className={`text-sm flex items-center gap-2 py-1.5 px-3 rounded-lg transition-all ${
-            editMode
-              ? 'bg-primary-600 text-white shadow-sm hover:bg-primary-700'
-              : 'btn-secondary'
-          }`}
-        >
-          {editMode ? (
-            <><CheckIcon className="w-4 h-4" />{saving ? 'Saving...' : 'Done'}</>
-          ) : (
-            <><Bars3Icon className="w-4 h-4" />Arrange</>
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
+          {editMode && (
+            <button
+              onClick={restoreDefaultLayout}
+              disabled={saving}
+              className="text-xs flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title="Restore default layout"
+              aria-label="Restore default widget layout"
+            >
+              <ArrowUturnLeftIcon className="w-3.5 h-3.5" />
+              Reset
+            </button>
           )}
-        </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="btn-secondary text-sm flex items-center gap-2 py-1.5 px-3"
+            aria-label="Refresh widget data"
+          >
+            <ArrowPathIcon className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
+          <button
+            onClick={() => setShowManager(true)}
+            className="btn-secondary text-sm flex items-center gap-2 py-1.5 px-3"
+            aria-label="Customize widgets"
+          >
+            <Cog6ToothIcon className="w-4 h-4" />
+            <span className="hidden sm:inline">Customize</span>
+          </button>
+          <button
+            onClick={toggleEditMode}
+            className={`text-sm flex items-center gap-2 py-1.5 px-3 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 ${
+              editMode
+                ? 'bg-primary-600 text-white shadow-sm hover:bg-primary-700'
+                : 'btn-secondary'
+            }`}
+            aria-label={editMode ? 'Save layout' : 'Edit layout'}
+            aria-pressed={editMode}
+          >
+            {editMode ? (
+              <><CheckIcon className="w-4 h-4" />{saving ? 'Saving...' : 'Done'}</>
+            ) : (
+              <><Bars3Icon className="w-4 h-4" /><span className="hidden sm:inline">Arrange</span></>
+            )}
+          </button>
+        </div>
       </div>
 
       {editMode && (
-        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg px-4 py-2.5 text-sm text-primary-700 dark:text-primary-300 flex items-center gap-2">
+        <div className="bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800 rounded-lg px-4 py-2.5 text-sm text-primary-700 dark:text-primary-300 flex items-center gap-2" role="status" aria-live="polite">
           <Bars3Icon className="w-4 h-4 flex-shrink-0" />
-          Drag the handlebar to reposition. Use bottom-right corner to resize. Click Done to save.
+          <span>Drag handlebar to reposition. Use bottom-right <kbd className="px-1 py-0.5 bg-primary-200 dark:bg-primary-800 rounded text-[10px]">↘</kbd> to resize. Click <strong>Done</strong> to save.</span>
         </div>
       )}
 
@@ -329,8 +401,14 @@ export default function WidgetGrid({ onMetricsUpdate }) {
                 }`}
               >
                 {editMode && (
-                  <div className="widget-drag-handle absolute top-0 left-0 right-0 h-8 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 flex items-center px-2 gap-1 cursor-grab active:cursor-grabbing z-10 rounded-t-xl select-none">
-                    <Bars3Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <div
+                    className="widget-drag-handle absolute top-0 left-0 right-0 h-8 bg-gray-50 dark:bg-gray-800/80 border-b border-gray-200 dark:border-gray-700 flex items-center px-2 gap-1 cursor-grab active:cursor-grabbing z-10 rounded-t-xl select-none"
+                    role="toolbar"
+                    aria-label="Widget controls"
+                    tabIndex={0}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); } }}
+                  >
+                    <Bars3Icon className="w-4 h-4 text-gray-400 flex-shrink-0" aria-hidden="true" />
                     <div className="flex-1 min-w-0">
                       <input
                         type="text"
@@ -339,6 +417,7 @@ export default function WidgetGrid({ onMetricsUpdate }) {
                         onClick={(e) => e.stopPropagation()}
                         onMouseDown={(e) => e.stopPropagation()}
                         className="w-full bg-transparent text-xs font-medium text-gray-700 dark:text-gray-300 border-0 p-0 focus:outline-none focus:ring-0 truncate"
+                        aria-label="Widget title"
                       />
                     </div>
                     <div className="flex items-center gap-0.5 flex-shrink-0 ml-1">
@@ -346,18 +425,21 @@ export default function WidgetGrid({ onMetricsUpdate }) {
                         <button
                           key={c}
                           onClick={(e) => { e.stopPropagation(); changeWidgetColor(widget.id, c); }}
-                          className={`w-3.5 h-3.5 rounded-full border-2 transition-all ${
+                          className={`w-3.5 h-3.5 rounded-full border-2 transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 ${
                             COLOR_DOT_CLASSES[c] || 'bg-blue-500'
                           } ${
                             color === c ? 'border-gray-800 dark:border-white scale-110' : 'border-transparent'
                           }`}
+                          aria-label={`Set color to ${c}`}
+                          aria-pressed={color === c}
                         />
                       ))}
                       <button
-                        onClick={(e) => { e.stopPropagation(); handleRemoveWidget(widget.id); }}
-                        className="p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 ml-1"
+                        onClick={(e) => { e.stopPropagation(); hideWidget(widget.id); }}
+                        className="p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 ml-1 focus:outline-none focus:ring-2 focus:ring-red-400"
+                        aria-label={`Remove ${widget.title} widget`}
                       >
-                        <XMarkIcon className="w-3.5 h-3.5" />
+                        <XMarkIcon className="w-3.5 h-3.5" aria-hidden="true" />
                       </button>
                     </div>
                   </div>
@@ -368,7 +450,7 @@ export default function WidgetGrid({ onMetricsUpdate }) {
                     data={widgetData[widget.id]}
                     loading={!widgetData[widget.id]}
                     onRemove={editMode ? undefined : () => handleRemoveWidget(widget.id)}
-                    onRefresh={() => fetchData([widget])}
+                    onRefresh={() => handleRefreshWidget(widget.id)}
                   />
                 </div>
               </div>

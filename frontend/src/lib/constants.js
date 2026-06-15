@@ -93,6 +93,7 @@ export const SYSTEM_WIDGETS = [
   { widgetType: 'building_reports', label: 'Building Reports', displayType: 'table', roles: ['SUPERADMIN','ADMIN'] },
   { widgetType: 'restaurant_reports', label: 'Restaurant Reports', displayType: 'table', roles: ['SUPERADMIN','ADMIN'] },
   { widgetType: 'revenue_chart', label: 'Revenue Chart', displayType: 'bar_chart', roles: ['SUPERADMIN','ADMIN','BUILDING_MANAGER','RESTAURANT_MANAGER'] },
+  { widgetType: 'food_card_overview', label: 'Food Card', displayType: 'food_card', roles: ['CUSTOMER','SUPERADMIN','ADMIN','BUILDING_MANAGER','RESTAURANT_MANAGER'] },
 ];
 
 export const SIDEBAR_LINKS = {

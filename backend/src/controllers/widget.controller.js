@@ -20,6 +20,7 @@ const AVAILABLE_WIDGETS = {
   building_reports:      { label: 'Building Reports', displayType: 'table',     roles: ['SUPERADMIN','ADMIN'] },
   restaurant_reports:    { label: 'Restaurant Reports',displayType: 'table',    roles: ['SUPERADMIN','ADMIN'] },
   revenue_chart:         { label: 'Revenue Chart',    displayType: 'bar_chart', roles: ['SUPERADMIN','ADMIN','BUILDING_MANAGER','RESTAURANT_MANAGER'] },
+  food_card_overview:    { label: 'Food Card',        displayType: 'food_card', roles: ['CUSTOMER','SUPERADMIN','ADMIN','BUILDING_MANAGER','RESTAURANT_MANAGER'] },
 };
 
 const CUSTOM_DATA_SOURCES = [
@@ -373,7 +374,7 @@ async function batchWidgetData(req, res, next) {
 
     const results = {};
     for (const w of widgets) {
-      results[w.id] = await resolveWidgetData(w, where, restaurantWhere, superOverview, reports, isSuper);
+      results[w.id] = await resolveWidgetData(w, where, restaurantWhere, superOverview, reports, isSuper, req.user);
     }
     res.json(results);
   } catch (err) { next(err); }
@@ -390,7 +391,7 @@ async function getPeriodCount(where, daysAgo) {
   return prisma.order.count({ where: { ...where, createdAt: { gte: start, lt: end } } });
 }
 
-async function resolveWidgetData(widget, where, restaurantWhere, superOverview, reports, isSuper) {
+async function resolveWidgetData(widget, where, restaurantWhere, superOverview, reports, isSuper, user) {
   const type = widget.widgetType;
   const isCustom = widget.isCustom;
 
@@ -464,6 +465,32 @@ async function resolveWidgetData(widget, where, restaurantWhere, superOverview, 
       return isSuper ? { data: reports?.buildings || [] } : { data: [] };
     case 'restaurant_reports':
       return isSuper ? { data: reports?.restaurants || [] } : { data: [] };
+    case 'food_card_overview': {
+      try {
+        const card = await prisma.foodCard.findUnique({ where: { userId: user?.id } });
+        if (!card) return { balance: 0, cardNumber: null, isActive: false, transactions: [] };
+        const transactions = await prisma.foodCardTransaction.findMany({
+          where: { foodCardId: card.id },
+          orderBy: { createdAt: 'desc' },
+          take: 10,
+        });
+        const ordersPaid = await prisma.order.count({
+          where: { customerId: user?.id, paymentMethod: 'FOOD_CARD' },
+        });
+        return {
+          balance: card.balance,
+          cardNumber: card.cardNumber,
+          isActive: card.isActive,
+          createdAt: card.createdAt,
+          transactions,
+          ordersPaid,
+          totalSpent: transactions.filter(t => t.type === 'PAYMENT').reduce((s, t) => s + t.amount, 0),
+          totalToppedUp: transactions.filter(t => t.type === 'TOPUP').reduce((s, t) => s + t.amount, 0),
+        };
+      } catch {
+        return { balance: 0, cardNumber: null, isActive: false, transactions: [] };
+      }
+    }
     case 'revenue_chart': {
       const days = 7;
       const startDate = new Date();
