@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -7,14 +6,13 @@ import BottomNav from './BottomNav';
 import { useRole } from '../../hooks/useRole';
 
 export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { isCustomer } = useRole();
 
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <Header onMenuClick={() => setSidebarOpen(true)} />
+        <Header />
         <LocationBar />
         <main className={`flex-1 p-3 sm:p-4 lg:p-6 overflow-auto ${
           !isCustomer ? 'pb-24 sm:pb-6 lg:pb-6' : 'pb-6'

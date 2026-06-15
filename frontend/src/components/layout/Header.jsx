@@ -4,12 +4,12 @@ import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { ROLE_LABELS } from '../../lib/constants';
 import {
-  Bars3Icon, BellIcon, ChevronDownIcon, ArrowRightOnRectangleIcon,
+  BellIcon, ChevronDownIcon, ArrowRightOnRectangleIcon,
   UserCircleIcon, SunIcon, MoonIcon,
 } from '@heroicons/react/24/outline';
 import { useState } from 'react';
 
-export default function Header({ onMenuClick }) {
+export default function Header() {
   const { user, logout } = useAuth();
   const { notifications, setNotifications } = useSocket();
   const [showNotif, setShowNotif] = useState(false);
@@ -28,9 +28,13 @@ export default function Header({ onMenuClick }) {
 
   return (
     <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-3 lg:px-6">
-      <button onClick={onMenuClick} className="p-2 min-w-[44px] min-h-[44px] rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 lg:hidden flex items-center justify-center">
-        <Bars3Icon className="w-6 h-6" />
-      </button>
+      <div className="flex items-center gap-2 min-w-0">
+        {user?.building && user?.restaurant && (
+          <span className="text-sm font-semibold text-gray-900 dark:text-white truncate max-w-[300px]">
+            {user.building.name} - {user.restaurant.name}
+          </span>
+        )}
+      </div>
 
       <div className="flex-1" />
 
