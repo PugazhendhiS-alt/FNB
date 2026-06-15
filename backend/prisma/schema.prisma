@@ -52,20 +52,28 @@ model Building {
 }
 
 model Restaurant {
-  id          String     @id @default(uuid())
-  name        String
-  description String?
-  cuisine     String?
-  phone       String?
-  image       String?
-  isActive    Boolean    @default(true)
-  buildingId  String
-  building    Building   @relation(fields: [buildingId], references: [id])
-  menuItems   MenuItem[]
-  users       User[]     @relation("RestaurantUsers")
-  orders      Order[]    @relation("RestaurantOrders")
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id                String              @id @default(uuid())
+  name              String
+  description       String?
+  cuisine           String?
+  phone             String?
+  image             String?
+  isActive          Boolean             @default(true)
+  buildingId        String
+  building          Building            @relation(fields: [buildingId], references: [id])
+  menuItems         MenuItem[]
+  users             User[]              @relation("RestaurantUsers")
+  orders            Order[]             @relation("RestaurantOrders")
+  inventoryItems    InventoryItem[]
+  purchaseOrders    PurchaseOrder[]
+  goodsReceipts     GoodsReceipt[]
+  transfersFrom     StockTransfer[]     @relation("TransferFrom")
+  transfersTo       StockTransfer[]     @relation("TransferTo")
+  stockAdjustments  StockAdjustment[]
+  physicalStockCounts PhysicalStockCount[]
+  wastageEntries    WastageEntry[]
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
 
   @@index([buildingId])
   @@index([isActive])
@@ -83,6 +91,7 @@ model MenuItem {
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
   orderItems   OrderItem[]
+  recipeMapping RecipeMapping?
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
@@ -255,6 +264,7 @@ model InventoryItem {
   restaurantId    String?
   restaurant      Restaurant?       @relation(fields: [restaurantId], references: [id])
   recipeIngredients RecipeIngredient[]
+  purchaseOrderItems PurchaseOrderItem[]
   stock           InventoryStock?
   movements       InventoryMovement[]
   grnItems        GoodsReceiptItem[]
@@ -306,6 +316,7 @@ model Vendor {
   isActive        Boolean        @default(true)
   items           InventoryItem[]
   purchaseOrders  PurchaseOrder[]
+  goodsReceipts   GoodsReceipt[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
 
