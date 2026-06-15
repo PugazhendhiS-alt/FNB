@@ -24,7 +24,6 @@ export default function Dashboard() {
   const [metrics, setMetrics] = useState([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [dateRange, setDateRange] = useState('7d');
-  const [initialLoading, setInitialLoading] = useState(true);
   const [kpiLoading, setKpiLoading] = useState(true);
   const { isSuperadmin, currentRole, isCustomer } = useRole();
   const navigate = useNavigate();
@@ -60,7 +59,6 @@ export default function Dashboard() {
       } finally {
         if (!cancelled) {
           setKpiLoading(false);
-          setInitialLoading(false);
         }
       }
     }
