@@ -14,6 +14,6 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=build /app/dist ./dist
-RUN npm i -g serve
+COPY server.js .
 EXPOSE 8080
-CMD ["serve", "-s", "dist", "-l", "8080"]
+CMD ["node", "server.js"]
