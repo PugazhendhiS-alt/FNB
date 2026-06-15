@@ -24,6 +24,7 @@ model User {
   createdOrders   Order[]     @relation("OrderCreator")
   widgets         UserWidget[]
   otps            Otp[]
+  foodCard        FoodCard?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -174,4 +175,36 @@ model UserWidget {
 
   @@index([userId])
   @@index([userId, isVisible])
+}
+
+model FoodCard {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  cardNumber String  @unique
+  balance   Float    @default(0)
+  pin       String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions FoodCardTransaction[]
+  @@index([userId])
+  @@index([cardNumber])
+}
+
+model FoodCardTransaction {
+  id          String   @id @default(uuid())
+  foodCardId  String
+  foodCard    FoodCard @relation(fields: [foodCardId], references: [id])
+  type        String
+  amount      Float
+  balanceBefore Float
+  balanceAfter  Float
+  description String?
+  orderId     String?
+  createdAt   DateTime @default(now())
+
+  @@index([foodCardId])
+  @@index([foodCardId, createdAt])
 }

@@ -83,9 +83,41 @@ async function main() {
     }
   }
 
+  // Create Food Cards for existing users
+  const foodCardUsers = ['customer1', 'customer2', 'customer3'].filter(Boolean);
+  const allUsers = await prisma.user.findMany();
+  const cardPin = await bcrypt.hash('1234', 10);
+
+  for (const username of foodCardUsers) {
+    const u = allUsers.find(user => user.username === username);
+    if (u) {
+      const existingCard = await prisma.foodCard.findUnique({ where: { userId: u.id } });
+      if (!existingCard) {
+        let cardNumber;
+        let unique = false;
+        while (!unique) {
+          cardNumber = '411111111111' + String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+          const dup = await prisma.foodCard.findUnique({ where: { cardNumber } });
+          if (!dup) unique = true;
+        }
+        await prisma.foodCard.create({
+          data: {
+            userId: u.id,
+            cardNumber,
+            pin: cardPin,
+            balance: 250.00,
+            isActive: true,
+          },
+        });
+        console.log(`Food Card created for ${username}: ****${cardNumber.slice(-4)} with $250.00 balance`);
+      }
+    }
+  }
+
   console.log('Seed completed successfully!');
   console.log('Superadmin created: username=Superadmin, password=Admin12345');
   console.log('Sample users created with passwords: admin123, manager123, chef123, customer123');
+  console.log('Food Cards created for customers with PIN: 1234');
 }
 
 main()

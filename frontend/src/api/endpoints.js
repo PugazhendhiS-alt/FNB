@@ -64,6 +64,15 @@ export const dashboardAPI = {
   getSuperAdminOverview: () => client.get('/dashboard/super-admin-overview'),
 };
 
+export const foodCardAPI = {
+  create: (data) => client.post('/food-card/create', data),
+  getCard: () => client.get('/food-card/card'),
+  topUp: (data) => client.post('/food-card/top-up', data),
+  pay: (data) => client.post('/food-card/pay', data),
+  getTransactions: () => client.get('/food-card/transactions'),
+  changePin: (data) => client.put('/food-card/change-pin', data),
+};
+
 export const widgetAPI = {
   getWidgets: () => client.get('/dashboard/widgets'),
   addWidget: (data) => client.post('/dashboard/widgets', data),

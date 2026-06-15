@@ -156,12 +156,35 @@ export default function Restaurants() {
         <PageHeader title="Restaurants" icon={HomeModernIcon} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {restaurants.filter(r => r.isActive).map((rest) => (
-            <Card key={rest.id} className="p-6 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/menu/${rest.id}`)}>
-              <h3 className="text-lg font-semibold mb-1">{rest.name}</h3>
-              {rest.cuisine && <p className="text-sm text-primary-600 mb-2">{rest.cuisine}</p>}
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{rest.building?.name}</p>
-              {rest.description && <p className="text-xs text-gray-400 mt-2">{rest.description}</p>}
-            </Card>
+            <div
+              key={rest.id}
+              className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all cursor-pointer group"
+              onClick={() => navigate(`/checkout/${rest.id}`)}
+            >
+              <div className="h-36 bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center relative">
+                <span className="text-5xl opacity-30">{rest.name?.charAt(0) || '🍽️'}</span>
+                <div className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 rounded-full px-2 py-0.5 text-xs font-semibold flex items-center gap-1">
+                  <span>⭐</span> 4.5
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-1">
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg leading-tight">{rest.name}</h3>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500 mb-2">
+                  {rest.cuisine && <span className="bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full">{rest.cuisine}</span>}
+                  <span>🕐 30-40 min</span>
+                </div>
+                <p className="text-xs text-gray-400 mb-3 line-clamp-1">{rest.building?.name}</p>
+                {rest.description && <p className="text-xs text-gray-400 line-clamp-2 mb-3">{rest.description}</p>}
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigate(`/checkout/${rest.id}`); }}
+                  className="w-full py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg text-sm font-semibold transition-colors opacity-0 group-hover:opacity-100 lg:opacity-100"
+                >
+                  Order Now
+                </button>
+              </div>
+            </div>
           ))}
         </div>
       </div>
