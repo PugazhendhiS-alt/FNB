@@ -13,7 +13,7 @@ async function login(req, res, next) {
 
     const user = await prisma.user.findUnique({
       where: { username },
-      include: { building: true, restaurant: true },
+      include: { building: true, restaurant: { include: { building: true } } },
     });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials.' });
@@ -65,7 +65,7 @@ async function getProfile(req, res, next) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.id },
-      include: { building: true, restaurant: true },
+      include: { building: true, restaurant: { include: { building: true } } },
     });
     if (!user) return res.status(404).json({ message: 'User not found.' });
     const { password: _, ...userData } = user;
@@ -85,7 +85,7 @@ async function switchRole(req, res, next) {
     if (!validRoles.includes(role)) {
       return res.status(400).json({ message: 'Invalid role.' });
     }
-    const user = await prisma.user.findUnique({ where: { id: req.user.id }, include: { building: true, restaurant: true } });
+    const user = await prisma.user.findUnique({ where: { id: req.user.id }, include: { building: true, restaurant: { include: { building: true } } } });
     const switchedUser = { ...user, role, activeRole: role, isSuperadmin: true };
     const token = generateToken(switchedUser);
     const { password: _, ...userData } = switchedUser;
