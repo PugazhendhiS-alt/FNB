@@ -28,7 +28,6 @@ export default function Dashboard() {
   const [kpiLoading, setKpiLoading] = useState(true);
   const { isSuperadmin, currentRole, isCustomer } = useRole();
   const navigate = useNavigate();
-  const metricsRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
