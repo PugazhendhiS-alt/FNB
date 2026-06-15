@@ -21,16 +21,16 @@ function LocationDropdown({ items, selected, onChange, icon: Icon, label, loadin
   if (loading) {
     return (
       <div className="flex items-center gap-1.5 px-2 py-1.5 min-w-[120px]">
-        <div className="w-4 h-4 rounded animate-pulse bg-gray-200 dark:bg-gray-600" />
-        <div className="h-4 w-24 rounded animate-pulse bg-gray-200 dark:bg-gray-600" />
+        <div className="w-3.5 h-3.5 rounded animate-pulse bg-gray-200 dark:bg-gray-600" />
+        <div className="h-3 w-20 rounded animate-pulse bg-gray-200 dark:bg-gray-600" />
       </div>
     );
   }
 
   if (items.length === 0 && !selected) {
     return (
-      <div className="flex items-center gap-1.5 text-sm text-gray-400 dark:text-gray-500 px-2 py-1.5">
-        <Icon className="w-4 h-4 flex-shrink-0" />
+      <div className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 px-2 py-1.5">
+        <Icon className="w-3.5 h-3.5 flex-shrink-0" />
         <span>No {label} Assigned</span>
       </div>
     );
@@ -38,8 +38,8 @@ function LocationDropdown({ items, selected, onChange, icon: Icon, label, loadin
 
   if (items.length <= 1) {
     return (
-      <div className="flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 px-2 py-1.5">
-        <Icon className="w-4 h-4 flex-shrink-0" />
+      <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 px-2 py-1.5">
+        <Icon className="w-3.5 h-3.5 flex-shrink-0" />
         <span className="font-medium text-gray-700 dark:text-gray-300">{selected?.name || items[0]?.name}</span>
       </div>
     );
@@ -48,8 +48,8 @@ function LocationDropdown({ items, selected, onChange, icon: Icon, label, loadin
   return (
     <Combobox value={selected} onChange={onChange}>
       <div className="relative">
-        <Combobox.Button className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-sm font-medium text-gray-700 dark:text-gray-200 min-w-[130px]">
-          <Icon className="w-4 h-4 flex-shrink-0" />
+        <Combobox.Button className="flex items-center gap-1.5 px-2 py-1.5 rounded-md bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-xs font-medium text-gray-700 dark:text-gray-200 min-w-[130px]">
+          <Icon className="w-3.5 h-3.5 flex-shrink-0" />
           <span className="truncate">{selected?.name}</span>
           <ChevronDownIcon className="w-3 h-3 text-gray-400 flex-shrink-0 ml-auto" />
         </Combobox.Button>
@@ -168,7 +168,7 @@ export default function TopBar({ onMenuClick }) {
 
         {/* Mobile context indicator */}
         {!isCustomer && (selectedBuilding || selectedRestaurant) && (
-          <div className="lg:hidden flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 truncate max-w-[40%]">
+          <div className="lg:hidden flex items-center gap-1.5 text-[10px] text-gray-500 dark:text-gray-400 truncate max-w-[40%]">
             {selectedBuilding && <span className="truncate">{selectedBuilding.name}</span>}
             {selectedBuilding && selectedRestaurant && <span className="flex-shrink-0">/</span>}
             {selectedRestaurant && <span className="truncate">{selectedRestaurant.name}</span>}
