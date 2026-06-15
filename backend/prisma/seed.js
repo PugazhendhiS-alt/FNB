@@ -20,96 +20,46 @@ async function main() {
     },
   });
 
-  const building1 = await prisma.building.create({
-    data: {
-      id: uuidv4(),
-      name: 'Downtown Food Court',
-      address: '123 Main Street, Downtown',
-      phone: '+1-555-0101',
-      description: 'Main downtown food court with multiple restaurants',
-    },
-  });
+  const buildBuilding = async (name, address, phone, description) => {
+    const existing = await prisma.building.findFirst({ where: { name } });
+    if (existing) return existing;
+    return prisma.building.create({ data: { id: uuidv4(), name, address, phone, description } });
+  };
 
-  const building2 = await prisma.building.create({
-    data: {
-      id: uuidv4(),
-      name: 'Mall Food Plaza',
-      address: '456 Shopping Ave, Mall Complex',
-      phone: '+1-555-0102',
-      description: 'Food plaza inside the city mall',
-    },
-  });
+  const buildRestaurant = async (name, description, cuisine, phone, building) => {
+    const existing = await prisma.restaurant.findFirst({ where: { name } });
+    if (existing) return existing;
+    return prisma.restaurant.create({ data: { id: uuidv4(), name, description, cuisine, phone, buildingId: building.id } });
+  };
 
-  const restaurant1 = await prisma.restaurant.create({
-    data: {
-      id: uuidv4(),
-      name: 'Spice Kitchen',
-      description: 'Authentic Indian cuisine with a modern twist',
-      cuisine: 'Indian',
-      phone: '+1-555-0201',
-      buildingId: building1.id,
-    },
-  });
+  const building1 = await buildBuilding('Downtown Food Court', '123 Main Street, Downtown', '+1-555-0101', 'Main downtown food court with multiple restaurants');
+  const building2 = await buildBuilding('Mall Food Plaza', '456 Shopping Ave, Mall Complex', '+1-555-0102', 'Food plaza inside the city mall');
 
-  const restaurant2 = await prisma.restaurant.create({
-    data: {
-      id: uuidv4(),
-      name: 'Pizza Paradise',
-      description: 'Wood-fired pizzas and Italian classics',
-      cuisine: 'Italian',
-      phone: '+1-555-0202',
-      buildingId: building1.id,
-    },
-  });
-
-  const restaurant3 = await prisma.restaurant.create({
-    data: {
-      id: uuidv4(),
-      name: 'Sushi World',
-      description: 'Fresh Japanese sushi and ramen',
-      cuisine: 'Japanese',
-      phone: '+1-555-0203',
-      buildingId: building2.id,
-    },
-  });
+  const restaurant1 = await buildRestaurant('Spice Kitchen', 'Authentic Indian cuisine with a modern twist', 'Indian', '+1-555-0201', building1);
+  const restaurant2 = await buildRestaurant('Pizza Paradise', 'Wood-fired pizzas and Italian classics', 'Italian', '+1-555-0202', building1);
+  const restaurant3 = await buildRestaurant('Sushi World', 'Fresh Japanese sushi and ramen', 'Japanese', '+1-555-0203', building2);
 
   const adminPassword = await bcrypt.hash('admin123', 10);
   const managerPassword = await bcrypt.hash('manager123', 10);
   const chefPassword = await bcrypt.hash('chef123', 10);
   const customerPassword = await bcrypt.hash('customer123', 10);
 
-  await prisma.user.createMany({
-    data: [
-      {
-        id: uuidv4(), username: 'admin1', email: 'admin@pos.com',
-        password: adminPassword, role: 'ADMIN', isSuperadmin: false,
-      },
-      {
-        id: uuidv4(), username: 'bldmgr1', email: 'bldmgr@pos.com',
-        password: managerPassword, role: 'BUILDING_MANAGER', isSuperadmin: false,
-        buildingId: building1.id,
-      },
-      {
-        id: uuidv4(), username: 'restmgr1', email: 'restmgr@pos.com',
-        password: managerPassword, role: 'RESTAURANT_MANAGER', isSuperadmin: false,
-        restaurantId: restaurant1.id,
-      },
-      {
-        id: uuidv4(), username: 'restmgr2', email: 'restmgr2@pos.com',
-        password: managerPassword, role: 'RESTAURANT_MANAGER', isSuperadmin: false,
-        restaurantId: restaurant2.id,
-      },
-      {
-        id: uuidv4(), username: 'chef1', email: 'chef@pos.com',
-        password: chefPassword, role: 'CHEF', isSuperadmin: false,
-        restaurantId: restaurant1.id,
-      },
-      {
-        id: uuidv4(), username: 'customer1', email: 'customer@pos.com',
-        password: customerPassword, role: 'CUSTOMER', isSuperadmin: false,
-      },
-    ],
-  });
+  const users = [
+    { username: 'admin1', email: 'admin@pos.com', password: adminPassword, role: 'ADMIN' },
+    { username: 'bldmgr1', email: 'bldmgr@pos.com', password: managerPassword, role: 'BUILDING_MANAGER', buildingId: building1.id },
+    { username: 'restmgr1', email: 'restmgr@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant1.id },
+    { username: 'restmgr2', email: 'restmgr2@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant2.id },
+    { username: 'chef1', email: 'chef@pos.com', password: chefPassword, role: 'CHEF', restaurantId: restaurant1.id },
+    { username: 'customer1', email: 'customer@pos.com', password: customerPassword, role: 'CUSTOMER' },
+  ];
+
+  for (const user of users) {
+    await prisma.user.upsert({
+      where: { username: user.username },
+      update: {},
+      create: { id: uuidv4(), ...user, isSuperadmin: false },
+    });
+  }
 
   const menuItems = [
     { name: 'Butter Chicken', description: 'Creamy tomato-based curry with tender chicken', price: 14.99, category: 'Main Course', restaurantId: restaurant1.id },
@@ -127,9 +77,10 @@ async function main() {
   ];
 
   for (const item of menuItems) {
-    await prisma.menuItem.create({
-      data: { id: uuidv4(), ...item },
-    });
+    const existing = await prisma.menuItem.findFirst({ where: { name: item.name, restaurantId: item.restaurantId } });
+    if (!existing) {
+      await prisma.menuItem.create({ data: { id: uuidv4(), ...item } });
+    }
   }
 
   console.log('Seed completed successfully!');
