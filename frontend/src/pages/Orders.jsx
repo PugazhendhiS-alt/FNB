@@ -6,11 +6,13 @@ import { useRole } from '../hooks/useRole';
 import { useSocket } from '../context/SocketContext';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
 import QRScanner from '../components/QRScanner';
+import { QRCodeSVG } from 'qrcode.react';
 import { formatCurrency, formatDate, getStatusLabel, getStatusStyle } from '../lib/utils';
-import { ClipboardDocumentListIcon, QrCodeIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { ClipboardDocumentListIcon, QrCodeIcon, XCircleIcon, EyeIcon } from '@heroicons/react/24/outline';
 
 const STATUS_TABS = ['ALL', 'PENDING_PAYMENT', 'PAID', 'PREPARING', 'COMPLETED', 'DELIVERED', 'CANCELLED'];
 
@@ -19,6 +21,7 @@ export default function Orders() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('ALL');
   const [expandedId, setExpandedId] = useState(null);
+  const [detailOrder, setDetailOrder] = useState(null);
   const [showScanner, setShowScanner] = useState(false);
   const [scannedCode, setScannedCode] = useState('');
   const { currentRole, isCustomer, canManageOrders } = useRole();
@@ -161,6 +164,15 @@ export default function Orders() {
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-medium">{formatCurrency(order.totalAmount)}</span>
                     <Badge variant={getStatusStyle(order.status).replace('badge-', '')}>{getStatusLabel(order.status)}</Badge>
+                    {order.status !== 'DELIVERED' && isCustomer && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setDetailOrder(order); }}
+                        className="p-1.5 rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/30 dark:text-primary-400 transition-colors"
+                        title="View Details"
+                      >
+                        <EyeIcon className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -202,6 +214,72 @@ export default function Orders() {
       </div>
 
       {showScanner && <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />}
+
+      <Modal open={!!detailOrder} onClose={() => setDetailOrder(null)} title={'Order #' + detailOrder?.orderCode?.slice(0, 8)}>
+        {detailOrder && (
+          <div className="space-y-5">
+            <div className="flex justify-center">
+              <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                <QRCodeSVG
+                  value={JSON.stringify({ orderId: detailOrder.id, orderCode: detailOrder.orderCode })}
+                  size={200}
+                  level="H"
+                  includeMargin
+                />
+              </div>
+            </div>
+
+            <div className="text-center">
+              <p className="text-lg font-mono font-bold tracking-wider">{detailOrder.orderCode}</p>
+              <Badge variant={getStatusStyle(detailOrder.status).replace('badge-', '')}>{getStatusLabel(detailOrder.status)}</Badge>
+            </div>
+
+            <div className="space-y-2 border-t border-gray-200 dark:border-gray-700 pt-4">
+              {detailOrder.items?.map((item, i) => (
+                <div key={item.id || i} className="flex justify-between text-sm">
+                  <span>x{item.quantity} {item.menuItem?.name}</span>
+                  <span className="text-gray-500">{formatCurrency(item.unitPrice * item.quantity)}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-gray-200 dark:border-gray-700 pt-3 space-y-1.5 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Restaurant</span>
+                <span className="font-medium">{detailOrder.restaurant?.name}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Customer</span>
+                <span>{detailOrder.customer?.username}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Total</span>
+                <span className="font-semibold">{formatCurrency(detailOrder.totalAmount)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Date</span>
+                <span>{formatDate(detailOrder.createdAt)}</span>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              {getNextActions(detailOrder.status).map(action => (
+                <Button
+                  key={action.status}
+                  variant={action.variant}
+                  className="flex-1"
+                  onClick={() => { handleStatusUpdate(detailOrder.id, action.status); setDetailOrder(null); }}
+                >
+                  {action.label}
+                </Button>
+              ))}
+              <Button variant="secondary" onClick={() => setDetailOrder(null)} className="flex-1">
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

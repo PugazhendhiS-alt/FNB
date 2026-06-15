@@ -223,6 +223,50 @@ async function updateStatus(req, res, next) {
       emitNotification(io, order.customerId, notification);
     }
 
+    if (status === 'COMPLETED') {
+      try {
+        const orderWithItems = await prisma.order.findUnique({
+          where: { id },
+          include: { items: true },
+        });
+        if (orderWithItems?.items) {
+          for (const oi of orderWithItems.items) {
+            const recipe = await prisma.recipeMapping.findUnique({
+              where: { menuItemId: oi.menuItemId },
+              include: { ingredients: true },
+            });
+            if (recipe?.ingredients) {
+              for (const ing of recipe.ingredients) {
+                const qtyToDeduct = ing.quantity * oi.quantity;
+                const stock = await prisma.inventoryStock.findUnique({ where: { itemId: ing.itemId } });
+                if (stock) {
+                  const bal = stock.available - qtyToDeduct;
+                  await prisma.inventoryStock.update({
+                    where: { itemId: ing.itemId },
+                    data: { quantity: stock.quantity - qtyToDeduct, available: Math.max(0, bal), updatedAt: new Date() },
+                  });
+                  await prisma.inventoryMovement.create({
+                    data: {
+                      itemId: ing.itemId, type: 'OUT',
+                      quantity: qtyToDeduct,
+                      balanceBefore: stock.available,
+                      balanceAfter: Math.max(0, bal),
+                      reference: 'ORDER',
+                      referenceId: id,
+                      notes: `Order ${order.orderCode} completed`,
+                      restaurantId: order.restaurantId,
+                    },
+                  });
+                }
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Inventory deduction error:', err.message);
+      }
+    }
+
     res.json(updated);
   } catch (err) {
     next(err);

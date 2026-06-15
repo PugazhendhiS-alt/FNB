@@ -30,7 +30,7 @@ const ROWS = [
     layout: '3-col',
     widgets: [
       { id: 'kitchen', Component: KitchenWidget, roles: ['SUPERADMIN', 'RESTAURANT_MANAGER', 'CHEF'] },
-      { id: 'inventory', Component: InventoryWidget, roles: ['SUPERADMIN', 'RESTAURANT_MANAGER'] },
+      { id: 'inventory', Component: InventoryWidget, roles: ['SUPERADMIN', 'RESTAURANT_MANAGER', 'CHEF'] },
       { id: 'customers', Component: CustomerWidget, roles: ['SUPERADMIN'] },
     ],
   },

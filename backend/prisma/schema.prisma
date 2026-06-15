@@ -212,3 +212,362 @@ model FoodCardTransaction {
   @@index([foodCardId])
   @@index([foodCardId, createdAt])
 }
+
+// ─── Inventory Module ─────────────────────────────────────────────────────────
+
+model InventoryCategory {
+  id          String            @id @default(uuid())
+  name        String
+  description String?
+  parentId    String?
+  parent      InventoryCategory? @relation("InventoryCategoryParent", fields: [parentId], references: [id])
+  children    InventoryCategory[] @relation("InventoryCategoryParent")
+  items       InventoryItem[]
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@index([parentId])
+  @@index([isActive])
+}
+
+model InventoryItem {
+  id              String            @id @default(uuid())
+  name            String
+  sku             String            @unique
+  barcode         String?
+  categoryId      String?
+  category        InventoryCategory? @relation(fields: [categoryId], references: [id])
+  unit            String            @default("pcs")
+  costPrice       Float             @default(0)
+  sellingPrice    Float             @default(0)
+  vendorId        String?
+  vendor          Vendor?           @relation(fields: [vendorId], references: [id])
+  reorderLevel    Float             @default(0)
+  reorderQty      Float             @default(0)
+  minStock        Float             @default(0)
+  maxStock        Float             @default(0)
+  storageLocation String?
+  batchNo         String?
+  expiryDate      DateTime?
+  image           String?
+  isActive        Boolean           @default(true)
+  restaurantId    String?
+  restaurant      Restaurant?       @relation(fields: [restaurantId], references: [id])
+  recipeIngredients RecipeIngredient[]
+  stock           InventoryStock?
+  movements       InventoryMovement[]
+  grnItems        GoodsReceiptItem[]
+  transferItems   StockTransferItem[]
+  adjustmentItems StockAdjustmentItem[]
+  countItems      StockCountItem[]
+  wastageItems    WastageItem[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([sku])
+  @@index([categoryId])
+  @@index([vendorId])
+  @@index([restaurantId])
+  @@index([isActive])
+}
+
+model InventoryStock {
+  id          String          @id @default(uuid())
+  itemId      String          @unique
+  item        InventoryItem   @relation(fields: [itemId], references: [id])
+  quantity    Float           @default(0)
+  reserved    Float           @default(0)
+  available   Float           @default(0)
+  location    String?
+  batchNo     String?
+  expiryDate  DateTime?
+  updatedAt   DateTime        @updatedAt
+
+  @@index([itemId])
+}
+
+model UnitOfMeasure {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  symbol    String?
+  createdAt DateTime  @default(now())
+}
+
+model Vendor {
+  id              String         @id @default(uuid())
+  name            String
+  contactPerson   String?
+  email           String?
+  phone           String?
+  gstNo           String?
+  address         String?
+  paymentTerms    String?
+  isActive        Boolean        @default(true)
+  items           InventoryItem[]
+  purchaseOrders  PurchaseOrder[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([isActive])
+}
+
+model PurchaseOrder {
+  id              String             @id @default(uuid())
+  poNumber        String             @unique
+  vendorId        String
+  vendor          Vendor             @relation(fields: [vendorId], references: [id])
+  restaurantId    String?
+  restaurant      Restaurant?        @relation(fields: [restaurantId], references: [id])
+  status          String             @default("DRAFT")
+  notes           String?
+  totalAmount     Float              @default(0)
+  requestedBy     String?
+  approvedBy      String?
+  items           PurchaseOrderItem[]
+  grns            GoodsReceipt[]
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@index([poNumber])
+  @@index([vendorId])
+  @@index([restaurantId])
+  @@index([status])
+}
+
+model PurchaseOrderItem {
+  id              String         @id @default(uuid())
+  purchaseOrderId String
+  purchaseOrder   PurchaseOrder  @relation(fields: [purchaseOrderId], references: [id])
+  itemId          String
+  item            InventoryItem  @relation(fields: [itemId], references: [id])
+  quantity        Float
+  unitPrice       Float
+  totalPrice      Float
+  receivedQty     Float          @default(0)
+  createdAt       DateTime       @default(now())
+
+  @@index([purchaseOrderId])
+  @@index([itemId])
+}
+
+model GoodsReceipt {
+  id              String             @id @default(uuid())
+  grnNumber       String             @unique
+  purchaseOrderId String?
+  purchaseOrder   PurchaseOrder?     @relation(fields: [purchaseOrderId], references: [id])
+  vendorId        String?
+  vendor          Vendor?            @relation(fields: [vendorId], references: [id])
+  restaurantId    String?
+  restaurant      Restaurant?        @relation(fields: [restaurantId], references: [id])
+  notes           String?
+  receivedBy      String?
+  items           GoodsReceiptItem[]
+  createdAt       DateTime           @default(now())
+
+  @@index([grnNumber])
+  @@index([purchaseOrderId])
+  @@index([restaurantId])
+}
+
+model GoodsReceiptItem {
+  id              String        @id @default(uuid())
+  goodsReceiptId  String
+  goodsReceipt    GoodsReceipt  @relation(fields: [goodsReceiptId], references: [id])
+  itemId          String
+  item            InventoryItem @relation(fields: [itemId], references: [id])
+  quantity        Float
+  damagedQty      Float         @default(0)
+  unitPrice       Float         @default(0)
+  batchNo         String?
+  expiryDate      DateTime?
+  createdAt       DateTime      @default(now())
+
+  @@index([goodsReceiptId])
+  @@index([itemId])
+}
+
+model StockTransfer {
+  id              String              @id @default(uuid())
+  transferNo      String              @unique
+  fromRestaurantId String?
+  fromRestaurant   Restaurant?        @relation("TransferFrom", fields: [fromRestaurantId], references: [id])
+  toRestaurantId  String?
+  toRestaurant    Restaurant?         @relation("TransferTo", fields: [toRestaurantId], references: [id])
+  status          String              @default("REQUESTED")
+  notes           String?
+  requestedBy     String?
+  approvedBy      String?
+  receivedBy      String?
+  items           StockTransferItem[]
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([transferNo])
+  @@index([fromRestaurantId])
+  @@index([toRestaurantId])
+  @@index([status])
+}
+
+model StockTransferItem {
+  id              String         @id @default(uuid())
+  transferId      String
+  transfer        StockTransfer  @relation(fields: [transferId], references: [id])
+  itemId          String
+  item            InventoryItem  @relation(fields: [itemId], references: [id])
+  quantity        Float
+  receivedQty     Float          @default(0)
+  createdAt       DateTime       @default(now())
+
+  @@index([transferId])
+  @@index([itemId])
+}
+
+model StockAdjustment {
+  id              String                @id @default(uuid())
+  adjustmentNo    String                @unique
+  restaurantId    String?
+  restaurant      Restaurant?           @relation(fields: [restaurantId], references: [id])
+  type            String                @default("NEGATIVE")
+  reason          String
+  notes           String?
+  status          String                @default("PENDING")
+  requestedBy     String?
+  approvedBy      String?
+  items           StockAdjustmentItem[]
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([adjustmentNo])
+  @@index([restaurantId])
+  @@index([status])
+}
+
+model StockAdjustmentItem {
+  id              String           @id @default(uuid())
+  adjustmentId    String
+  adjustment      StockAdjustment  @relation(fields: [adjustmentId], references: [id])
+  itemId          String
+  item            InventoryItem    @relation(fields: [itemId], references: [id])
+  quantity        Float
+  unitCost        Float            @default(0)
+  createdAt       DateTime         @default(now())
+
+  @@index([adjustmentId])
+  @@index([itemId])
+}
+
+model PhysicalStockCount {
+  id              String            @id @default(uuid())
+  countNo         String            @unique
+  restaurantId    String?
+  restaurant      Restaurant?       @relation(fields: [restaurantId], references: [id])
+  type            String            @default("MONTHLY")
+  status          String            @default("IN_PROGRESS")
+  notes           String?
+  countedBy       String?
+  approvedBy      String?
+  items           StockCountItem[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([countNo])
+  @@index([restaurantId])
+  @@index([status])
+}
+
+model StockCountItem {
+  id              String             @id @default(uuid())
+  countId         String
+  count           PhysicalStockCount @relation(fields: [countId], references: [id])
+  itemId          String
+  item            InventoryItem      @relation(fields: [itemId], references: [id])
+  systemQty       Float              @default(0)
+  countedQty      Float
+  variance        Float              @default(0)
+  notes           String?
+  createdAt       DateTime           @default(now())
+
+  @@index([countId])
+  @@index([itemId])
+}
+
+model WastageEntry {
+  id              String         @id @default(uuid())
+  wastageNo       String         @unique
+  restaurantId    String?
+  restaurant      Restaurant?    @relation(fields: [restaurantId], references: [id])
+  type            String         @default("EXPIRY")
+  notes           String?
+  reportedBy      String?
+  items           WastageItem[]
+  createdAt       DateTime       @default(now())
+
+  @@index([wastageNo])
+  @@index([restaurantId])
+  @@index([type])
+}
+
+model WastageItem {
+  id          String        @id @default(uuid())
+  wastageId   String
+  wastage     WastageEntry  @relation(fields: [wastageId], references: [id])
+  itemId      String
+  item        InventoryItem @relation(fields: [itemId], references: [id])
+  quantity    Float
+  unitCost    Float         @default(0)
+  reason      String?
+  createdAt   DateTime      @default(now())
+
+  @@index([wastageId])
+  @@index([itemId])
+}
+
+model RecipeMapping {
+  id          String              @id @default(uuid())
+  menuItemId  String              @unique
+  menuItem    MenuItem            @relation(fields: [menuItemId], references: [id])
+  servings    Int                 @default(1)
+  ingredients RecipeIngredient[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([menuItemId])
+}
+
+model RecipeIngredient {
+  id              String         @id @default(uuid())
+  recipeId        String
+  recipe          RecipeMapping  @relation(fields: [recipeId], references: [id])
+  itemId          String
+  item            InventoryItem  @relation(fields: [itemId], references: [id])
+  quantity        Float
+  unit            String         @default("pcs")
+  wastagePct      Float          @default(0)
+  createdAt       DateTime       @default(now())
+
+  @@index([recipeId])
+  @@index([itemId])
+}
+
+model InventoryMovement {
+  id            String        @id @default(uuid())
+  itemId        String
+  item          InventoryItem @relation(fields: [itemId], references: [id])
+  type          String
+  quantity      Float
+  balanceBefore Float
+  balanceAfter  Float
+  reference     String?
+  referenceId   String?
+  notes         String?
+  restaurantId  String?
+  createdById   String?
+  createdAt     DateTime      @default(now())
+
+  @@index([itemId])
+  @@index([type])
+  @@index([referenceId])
+  @@index([restaurantId])
+  @@index([createdAt])
+}

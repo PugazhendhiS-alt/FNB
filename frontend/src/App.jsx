@@ -15,6 +15,7 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
 const DeliveryConfirmation = lazy(() => import('./pages/DeliveryConfirmation'));
 const Users = lazy(() => import('./pages/Users'));
+const Inventory = lazy(() => import('./pages/Inventory'));
 
 function PageLoading() {
   return (
@@ -57,6 +58,7 @@ function AppRoutes() {
         <Route path="checkout" element={<Suspense fallback={<PageLoading />}><Checkout /></Suspense>} />
         <Route path="delivery-confirmation" element={<Suspense fallback={<PageLoading />}><DeliveryConfirmation /></Suspense>} />
         <Route path="users" element={<Suspense fallback={<PageLoading />}><Users /></Suspense>} />
+        <Route path="inventory" element={<Suspense fallback={<PageLoading />}><Inventory /></Suspense>} />
       </Route>
     </Routes>
   );

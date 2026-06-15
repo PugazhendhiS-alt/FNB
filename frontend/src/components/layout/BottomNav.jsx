@@ -2,12 +2,13 @@ import { NavLink, useLocation } from 'react-router-dom';
 import { useRole } from '../../hooks/useRole';
 import {
   ChartBarIcon, ShoppingBagIcon, BuildingStorefrontIcon,
-  UsersIcon, RectangleStackIcon,
+  UsersIcon, RectangleStackIcon, CubeIcon,
 } from '@heroicons/react/24/outline';
 
 const tabs = [
   { path: '/', label: 'Dashboard', icon: ChartBarIcon },
   { path: '/restaurants', label: 'Restaurants', icon: BuildingStorefrontIcon },
+  { path: '/inventory', label: 'Inventory', icon: CubeIcon },
   { path: '/menu', label: 'Menu', icon: RectangleStackIcon },
   { path: '/users', label: 'Users', icon: UsersIcon },
   { path: '/orders', label: 'Orders', icon: ShoppingBagIcon },
@@ -19,14 +20,15 @@ export default function BottomNav() {
 
   const visibleTabs = tabs.filter(t => {
     if (t.path === '/users' && isCustomer) return false;
-    if (t.path === '/orders' && !isCustomer) return false;
+    if (t.path === '/inventory' && isCustomer) return false;
+    if (t.path === '/menu' && isCustomer) return false;
     return true;
   });
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-gray-700/80 lg:hidden safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.2)]">
       <div className="flex items-center justify-around h-16 px-2">
-        {visibleTabs.slice(0, 5).map((tab) => {
+        {visibleTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = location.pathname === tab.path ||
             (tab.path !== '/' && location.pathname.startsWith(tab.path));

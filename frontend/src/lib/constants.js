@@ -96,6 +96,8 @@ export const SYSTEM_WIDGETS = [
 export const SIDEBAR_LINKS = {
   SUPERADMIN: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
+    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/users', label: 'Users', icon: 'UsersIcon' },
     { path: '/buildings', label: 'Buildings', icon: 'BuildingOffice2Icon' },
     { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
@@ -104,17 +106,20 @@ export const SIDEBAR_LINKS = {
   ],
   BUILDING_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
   ],
   RESTAURANT_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
     { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
+    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/menu', label: 'Menu', icon: 'RectangleStackIcon' },
     { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },
   ],
   CHEF: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
     { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
+    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
   ],
   CUSTOMER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },

@@ -11,7 +11,10 @@ async function login(req, res, next) {
       return res.status(400).json({ message: 'Username and password are required.' });
     }
 
-    const user = await prisma.user.findUnique({ where: { username } });
+    const user = await prisma.user.findUnique({
+      where: { username },
+      include: { building: true, restaurant: true },
+    });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }

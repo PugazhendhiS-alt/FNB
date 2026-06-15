@@ -4,12 +4,12 @@ import { useRole } from '../../hooks/useRole';
 import { SIDEBAR_LINKS } from '../../lib/constants';
 import {
   ChartBarIcon, BuildingOffice2Icon, HomeModernIcon, RectangleStackIcon,
-  ShoppingBagIcon, TruckIcon, UsersIcon, XMarkIcon, Bars3Icon,
+  ShoppingBagIcon, TruckIcon, UsersIcon, XMarkIcon, Bars3Icon, CubeIcon,
 } from '@heroicons/react/24/outline';
 
 const iconMap = {
   ChartBarIcon, BuildingOffice2Icon, HomeModernIcon,
-  RectangleStackIcon, ShoppingBagIcon, TruckIcon, UsersIcon,
+  RectangleStackIcon, ShoppingBagIcon, TruckIcon, UsersIcon, CubeIcon,
 };
 
 export default function Sidebar({ open, onClose }) {

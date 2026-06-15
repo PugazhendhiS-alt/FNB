@@ -14,6 +14,7 @@ const dashboardRoutes = require('./routes/dashboard.routes');
 const paymentRoutes = require('./routes/payment.routes');
 const deliveryRoutes = require('./routes/delivery.routes');
 const foodCardRoutes = require('./routes/foodcard.routes');
+const inventoryRoutes = require('./routes/inventory.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -59,6 +60,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/delivery', deliveryRoutes);
 app.use('/api/food-card', foodCardRoutes);
+app.use('/api/inventory', inventoryRoutes);
 
 app.use(errorHandler);
 
