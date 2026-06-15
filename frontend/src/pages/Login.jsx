@@ -29,6 +29,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   const [isEmail, setIsEmail] = useState(true);
   const otpRefs = useRef([]);
 
@@ -73,6 +74,7 @@ export default function Login() {
     try {
       const res = await sendOtp(identifier);
       setUserId(res.userId);
+      setOtpCode(res.otpCode || '');
       setOtpSent(true);
       toast.success(res.message || 'OTP sent successfully');
       setTimeout(() => otpRefs.current[0]?.focus(), 100);
@@ -164,6 +166,7 @@ export default function Login() {
     setUserId(null);
     setOtp(['', '', '', '', '', '']);
     setOtpSent(false);
+    setOtpCode('');
     setIsEmail(true);
   };
 
@@ -337,6 +340,12 @@ export default function Login() {
                     </p>
                     <p className="text-xs text-primary-500 dark:text-primary-400 mt-0.5">Enter the 6-digit code below</p>
                   </div>
+                  {otpCode && (
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 text-center">
+                      <p className="text-[10px] text-green-600 dark:text-green-400 font-medium uppercase tracking-wider">Dev Mode — OTP Code</p>
+                      <p className="text-2xl font-bold text-green-700 dark:text-green-300 tracking-[8px] mt-1">{otpCode}</p>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">

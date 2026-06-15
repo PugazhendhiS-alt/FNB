@@ -31,8 +31,11 @@ async function sendOtp(req, res, next) {
 
     await Promise.all(deliveries);
 
+  const isDevMode = !process.env.SMTP_HOST && process.env.SMS_PROVIDER !== 'twilio';
     const channels = email && phone ? 'email and mobile' : email ? 'email' : 'mobile';
-    res.json({ message: `OTP sent to your ${channels}.`, userId: user.id });
+    const response = { message: `OTP sent to your ${channels}.`, userId: user.id };
+    if (isDevMode) response.otpCode = code;
+    res.json(response);
   } catch (err) {
     next(err);
   }
