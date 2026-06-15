@@ -6,9 +6,9 @@ import {
 
 const METRICS = [
   { key: 'today', label: 'Today\'s Sales', color: 'from-blue-500 to-blue-600', icon: CurrencyDollarIcon },
-  { key: 'weekly', label: 'Weekly Sales', color: 'from-emerald-500 to-emerald-600', icon: TrendingUpIcon },
-  { key: 'monthly', label: 'Monthly Sales', color: 'from-violet-500 to-violet-600', icon: TrendingUpIcon },
-  { key: 'revenue', label: 'Revenue Trend', color: 'from-amber-500 to-amber-600', icon: TrendingUpIcon },
+  { key: 'weekly', label: 'Weekly Sales', color: 'from-emerald-500 to-emerald-600', icon: ArrowTrendingUpIcon },
+  { key: 'monthly', label: 'Monthly Sales', color: 'from-violet-500 to-violet-600', icon: ArrowTrendingUpIcon },
+  { key: 'revenue', label: 'Revenue Trend', color: 'from-amber-500 to-amber-600', icon: ArrowTrendingUpIcon },
 ];
 
 export default function SalesWidget({ data = {}, loading, onRemove, onRefresh, onResize, size }) {
