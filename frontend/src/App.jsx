@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { LocationProvider } from './context/LocationContext';
 import Layout from './components/layout/Layout';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -48,7 +49,7 @@ function AppRoutes() {
       <Route path="/menu/:restaurantId" element={<Suspense fallback={<PageLoading />}><Menu /></Suspense>} />
       <Route path="/checkout/:restaurantId" element={<Suspense fallback={<PageLoading />}><Checkout /></Suspense>} />
       <Route path="/order-success/:orderId" element={<Suspense fallback={<PageLoading />}><OrderSuccess /></Suspense>} />
-      <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+      <Route path="/" element={<PrivateRoute><LocationProvider><Layout /></LocationProvider></PrivateRoute>}>
         <Route index element={<Suspense fallback={<PageLoading />}><Dashboard /></Suspense>} />
         <Route path="buildings" element={<Suspense fallback={<PageLoading />}><Buildings /></Suspense>} />
         <Route path="buildings/:id" element={<Suspense fallback={<PageLoading />}><Buildings /></Suspense>} />

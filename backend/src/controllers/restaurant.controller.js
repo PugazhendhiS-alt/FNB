@@ -5,7 +5,9 @@ const prisma = new PrismaClient();
 async function getAll(req, res, next) {
   try {
     const where = {};
-    if (req.user.role === 'BUILDING_MANAGER' && req.user.buildingId) {
+    if (req.query.buildingId) {
+      where.buildingId = req.query.buildingId;
+    } else if (req.user.role === 'BUILDING_MANAGER' && req.user.buildingId) {
       where.buildingId = req.user.buildingId;
     }
     const restaurants = await prisma.restaurant.findMany({

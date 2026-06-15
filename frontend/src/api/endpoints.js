@@ -23,7 +23,7 @@ export const buildingAPI = {
 };
 
 export const restaurantAPI = {
-  getAll: () => client.get('/restaurants'),
+  getAll: (params) => client.get('/restaurants', { params }),
   getById: (id) => client.get(`/restaurants/${id}`),
   getQrCode: (id) => client.get(`/restaurants/${id}/qrcode`),
   create: (data) => client.post('/restaurants', data),

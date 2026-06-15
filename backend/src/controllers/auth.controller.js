@@ -85,7 +85,7 @@ async function switchRole(req, res, next) {
     if (!validRoles.includes(role)) {
       return res.status(400).json({ message: 'Invalid role.' });
     }
-    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const user = await prisma.user.findUnique({ where: { id: req.user.id }, include: { building: true, restaurant: true } });
     const switchedUser = { ...user, role, activeRole: role, isSuperadmin: true };
     const token = generateToken(switchedUser);
     const { password: _, ...userData } = switchedUser;
