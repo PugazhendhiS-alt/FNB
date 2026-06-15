@@ -8,8 +8,9 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Table from '../components/ui/Table';
 import Badge from '../components/ui/Badge';
+import PageHeader from '../components/ui/PageHeader';
 import { ROLE_LABELS } from '../lib/constants';
-import { PlusIcon, PencilIcon, TrashIcon, UserIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, UserIcon, BuildingOffice2Icon } from '@heroicons/react/24/outline';
 
 export default function Buildings() {
   const [buildings, setBuildings] = useState([]);
@@ -126,14 +127,14 @@ export default function Buildings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Buildings</h1>
-        {canManageBuildings && (
-          <Button onClick={openCreate}>
-            <PlusIcon className="w-4 h-4 mr-1" /> Add Building
-          </Button>
+      <PageHeader
+        title="Buildings"
+        subtitle="Manage building locations"
+        icon={BuildingOffice2Icon}
+        actions={canManageBuildings && (
+          <Button onClick={openCreate}><PlusIcon className="w-4 h-4 mr-1" /> Add Building</Button>
         )}
-      </div>
+      />
 
       <Card className="p-4 sm:p-6">
         <Table columns={columns} data={buildings} searchable />

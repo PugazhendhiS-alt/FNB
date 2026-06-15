@@ -7,7 +7,9 @@ import { useSocket } from '../context/SocketContext';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import PageHeader from '../components/ui/PageHeader';
 import { formatCurrency, formatDate, getStatusLabel, getStatusStyle } from '../lib/utils';
+import { ClipboardDocumentListIcon } from '@heroicons/react/24/outline';
 
 const STATUS_TABS = ['ALL', 'PENDING_PAYMENT', 'PAID', 'PREPARING', 'COMPLETED', 'DELIVERED', 'CANCELLED'];
 
@@ -68,7 +70,11 @@ export default function Orders() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">{isCustomer ? 'My Orders' : 'Orders'}</h1>
+      <PageHeader
+        title={isCustomer ? 'My Orders' : 'Orders'}
+        subtitle="Track and manage orders"
+        icon={ClipboardDocumentListIcon}
+      />
 
       <div className="flex overflow-x-auto gap-2 pb-2">
         {STATUS_TABS.map(tab => (

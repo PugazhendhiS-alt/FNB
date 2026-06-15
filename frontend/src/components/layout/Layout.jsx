@@ -10,12 +10,16 @@ export default function Layout() {
   const { isCustomer } = useRole();
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-gray-50 dark:bg-gray-900">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuClick={() => setSidebarOpen(true)} />
-        <main className={`flex-1 p-3 sm:p-4 lg:p-6 overflow-auto ${!isCustomer ? 'pb-20 sm:pb-4 lg:pb-6' : 'pb-4'}`}>
-          <Outlet />
+        <main className={`flex-1 p-3 sm:p-4 lg:p-6 overflow-auto ${
+          !isCustomer ? 'pb-24 sm:pb-6 lg:pb-6' : 'pb-6'
+        }`}>
+          <div className="max-w-7xl mx-auto space-y-6">
+            <Outlet />
+          </div>
         </main>
         {!isCustomer && <BottomNav />}
       </div>

@@ -10,8 +10,9 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Table from '../components/ui/Table';
 import Badge from '../components/ui/Badge';
+import PageHeader from '../components/ui/PageHeader';
 import { ROLE_LABELS } from '../lib/constants';
-import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, UserIcon, QrCodeIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, UserIcon, QrCodeIcon, HomeModernIcon } from '@heroicons/react/24/outline';
 
 export default function Restaurants() {
   const [restaurants, setRestaurants] = useState([]);
@@ -152,7 +153,7 @@ export default function Restaurants() {
   if (isCustomer) {
     return (
       <div className="space-y-6">
-        <h1 className="text-2xl font-bold">Restaurants</h1>
+        <PageHeader title="Restaurants" icon={HomeModernIcon} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {restaurants.filter(r => r.isActive).map((rest) => (
             <Card key={rest.id} className="p-6 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/menu/${rest.id}`)}>
@@ -169,12 +170,14 @@ export default function Restaurants() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Restaurants</h1>
-        {canManageRestaurants && (
+      <PageHeader
+        title="Restaurants"
+        subtitle="Manage all restaurant locations"
+        icon={HomeModernIcon}
+        actions={canManageRestaurants && (
           <Button onClick={openCreate}><PlusIcon className="w-4 h-4 mr-1" /> Add Restaurant</Button>
         )}
-      </div>
+      />
       <Card className="p-4 sm:p-6">
         <Table columns={columns} data={restaurants} searchable />
       </Card>

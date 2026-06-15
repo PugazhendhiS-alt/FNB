@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useRole } from '../hooks/useRole';
 import Badge from '../components/ui/Badge';
+import PageHeader from '../components/ui/PageHeader';
 import WidgetGrid from '../components/dashboard/WidgetGrid';
 import PrimaryMetricsBar from '../components/dashboard/PrimaryMetricsBar';
 import DashboardFilters, { FilterToggleButton } from '../components/dashboard/DashboardFilters';
@@ -55,26 +56,17 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* ── Header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-md shadow-blue-500/10">
-            <ChartBarIcon className="w-5 h-5" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {isSuperadmin ? 'Dashboard' : 'Dashboard'}
-            </h1>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-              {isSuperadmin ? 'Complete system overview at a glance' : 'Your personalized overview'}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="purple" className="text-xs">{currentRole}</Badge>
-          <FilterToggleButton open={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} />
-        </div>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle={isSuperadmin ? 'Complete system overview at a glance' : 'Your personalized overview'}
+        icon={ChartBarIcon}
+        actions={
+          <>
+            <Badge variant="purple" className="text-xs">{currentRole}</Badge>
+            <FilterToggleButton open={filtersOpen} onClick={() => setFiltersOpen(!filtersOpen)} />
+          </>
+        }
+      />
 
       {/* ── Filters ── */}
       <DashboardFilters

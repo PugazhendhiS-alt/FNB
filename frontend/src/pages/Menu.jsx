@@ -9,8 +9,9 @@ import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
+import PageHeader from '../components/ui/PageHeader';
 import { formatCurrency } from '../lib/utils';
-import { PlusIcon, PencilIcon, TrashIcon, ShoppingCartIcon, FunnelIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, ShoppingCartIcon, FunnelIcon, RectangleStackIcon } from '@heroicons/react/24/outline';
 
 export default function Menu() {
   const { restaurantId } = useParams();
@@ -122,22 +123,23 @@ export default function Menu() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">{restaurant ? restaurant.name : 'Menu Items'}</h1>
-          {restaurant?.description && <p className="text-sm text-gray-500 mt-1">{restaurant.description}</p>}
-        </div>
-        <div className="flex gap-2">
-          {isCustomer && restaurantId && (
-            <Button onClick={() => navigate(`/checkout/${restaurantId}`)}>
-              <ShoppingCartIcon className="w-4 h-4 mr-1" /> Order Now
-            </Button>
-          )}
-          {canManageMenu && (
-            <Button onClick={openCreate}><PlusIcon className="w-4 h-4 mr-1" /> Add Item</Button>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title={restaurant ? restaurant.name : 'Menu Items'}
+        subtitle={restaurant?.description || 'Browse and manage menu items'}
+        icon={RectangleStackIcon}
+        actions={
+          <>
+            {isCustomer && restaurantId && (
+              <Button onClick={() => navigate(`/checkout/${restaurantId}`)}>
+                <ShoppingCartIcon className="w-4 h-4 mr-1" /> Order Now
+              </Button>
+            )}
+            {canManageMenu && (
+              <Button onClick={openCreate}><PlusIcon className="w-4 h-4 mr-1" /> Add Item</Button>
+            )}
+          </>
+        }
+      />
 
       {isCustomer && restaurant ? (
         <div className="space-y-6">

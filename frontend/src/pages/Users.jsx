@@ -9,7 +9,8 @@ import Modal from '../components/ui/Modal';
 import Input from '../components/ui/Input';
 import Table from '../components/ui/Table';
 import Badge from '../components/ui/Badge';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import PageHeader from '../components/ui/PageHeader';
+import { PlusIcon, PencilIcon, TrashIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 const roleOptions = Object.entries(ROLE_LABELS);
 
@@ -146,14 +147,14 @@ export default function Users() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Users</h1>
-        {isAdmin && (
-          <Button onClick={openCreate}>
-            <PlusIcon className="w-4 h-4 mr-1" /> Add User
-          </Button>
+      <PageHeader
+        title="Users"
+        subtitle="Manage system users and roles"
+        icon={UsersIcon}
+        actions={isAdmin && (
+          <Button onClick={openCreate}><PlusIcon className="w-4 h-4 mr-1" /> Add User</Button>
         )}
-      </div>
+      />
 
       <Card className="p-4 sm:p-6">
         <Table columns={columns} data={users} searchable searchPlaceholder="Search users..." />
