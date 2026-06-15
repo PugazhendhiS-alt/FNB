@@ -14,8 +14,10 @@ export function useRole() {
 
   const currentRole = user?.activeRole || effectiveRole;
 
-  const canManageBuildings = isAdmin || isBuildingManager;
-  const canManageRestaurants = isAdmin || isBuildingManager;
+  const canManageBuildings = isSuperadmin || isAdmin;
+  const canEditBuilding = isSuperadmin || isAdmin || isBuildingManager;
+  const canManageRestaurants = isSuperadmin || isAdmin || isBuildingManager;
+  const canDeleteRestaurant = isSuperadmin || isAdmin;
   const canManageMenu = isAdmin || isRestaurantManager;
   const canManageOrders = isAdmin || isRestaurantManager || isChef;
   const canViewDashboard = true;
@@ -23,7 +25,7 @@ export function useRole() {
 
   return {
     isSuperadmin, isAdmin, isBuildingManager, isRestaurantManager, isChef, isCustomer,
-    currentRole, canManageBuildings, canManageRestaurants, canManageMenu,
+    currentRole, canManageBuildings, canEditBuilding, canManageRestaurants, canDeleteRestaurant, canManageMenu,
     canManageOrders, canViewDashboard, canPlaceOrders,
   };
 }

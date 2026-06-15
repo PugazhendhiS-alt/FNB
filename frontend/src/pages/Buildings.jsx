@@ -21,7 +21,7 @@ export default function Buildings() {
   const [form, setForm] = useState({ name: '', address: '', phone: '', description: '', image: '' });
   const [imagePreview, setImagePreview] = useState('');
   const [assignedUsers, setAssignedUsers] = useState([]);
-  const { canManageBuildings, isSuperadmin } = useRole();
+  const { canManageBuildings, canEditBuilding, isSuperadmin } = useRole();
 
   useEffect(() => { fetchBuildings(); }, []);
 
@@ -148,12 +148,12 @@ export default function Buildings() {
         </button>
       ),
     },
-    ...(canManageBuildings ? [{
+    ...(canManageBuildings || canEditBuilding ? [{
       key: 'actions', label: 'Actions',
       render: (_, row) => (
         <div className="flex gap-2">
-          <button onClick={() => openEdit(row)} className="p-1 hover:text-primary-600"><PencilIcon className="w-4 h-4" /></button>
-          <button onClick={() => handleDelete(row.id)} className="p-1 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>
+          {canEditBuilding && <button onClick={() => openEdit(row)} className="p-1 hover:text-primary-600"><PencilIcon className="w-4 h-4" /></button>}
+          {canManageBuildings && <button onClick={() => handleDelete(row.id)} className="p-1 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>}
         </div>
       ),
     }] : []),

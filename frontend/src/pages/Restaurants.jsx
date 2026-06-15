@@ -26,7 +26,7 @@ export default function Restaurants() {
   const [form, setForm] = useState({ name: '', description: '', cuisine: '', phone: '', image: '', buildingId: '' });
   const [imagePreview, setImagePreview] = useState('');
   const [assignedUsers, setAssignedUsers] = useState([]);
-  const { canManageRestaurants, isCustomer, isSuperadmin, isBuildingManager } = useRole();
+  const { canManageRestaurants, isCustomer, isSuperadmin, isBuildingManager, canDeleteRestaurant } = useRole();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -178,7 +178,7 @@ export default function Restaurants() {
           <button onClick={() => navigate(`/menu/${row.id}`)} className="p-1 hover:text-primary-600"><EyeIcon className="w-4 h-4" /></button>
           <button onClick={() => showQrCode(row)} className="p-1 hover:text-primary-600"><QrCodeIcon className="w-4 h-4" /></button>
           {canManageRestaurants && <button onClick={() => openEdit(row)} className="p-1 hover:text-primary-600"><PencilIcon className="w-4 h-4" /></button>}
-          {canManageRestaurants && <button onClick={() => handleDelete(row.id)} className="p-1 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>}
+          {canDeleteRestaurant && <button onClick={() => handleDelete(row.id)} className="p-1 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>}
         </div>
       ),
     }] : []),
