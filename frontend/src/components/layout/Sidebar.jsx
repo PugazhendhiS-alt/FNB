@@ -47,10 +47,7 @@ export default function Sidebar({ open, onClose }) {
             );
           })}
         </nav>
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-xs text-gray-400 text-center font-bold text-primary-600">POS System</p>
-          <p className="text-[10px] text-gray-400 text-center mt-0.5">v1.0</p>
-        </div>
+
       </aside>
     </>
   );
