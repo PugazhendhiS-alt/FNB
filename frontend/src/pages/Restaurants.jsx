@@ -1,0 +1,256 @@
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { restaurantAPI, buildingAPI, authAPI } from '../api/endpoints';
+import { useRole } from '../hooks/useRole';
+import { useAuth } from '../context/AuthContext';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Modal from '../components/ui/Modal';
+import Input from '../components/ui/Input';
+import Table from '../components/ui/Table';
+import Badge from '../components/ui/Badge';
+import { ROLE_LABELS } from '../lib/constants';
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, UserIcon, QrCodeIcon, XMarkIcon } from '@heroicons/react/24/outline';
+
+export default function Restaurants() {
+  const [restaurants, setRestaurants] = useState([]);
+  const [buildings, setBuildings] = useState([]);
+  const [allUsers, setAllUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [qrModalOpen, setQrModalOpen] = useState(false);
+  const [qrData, setQrData] = useState(null);
+  const [editing, setEditing] = useState(null);
+  const [form, setForm] = useState({ name: '', description: '', cuisine: '', phone: '', buildingId: '' });
+  const [assignedUsers, setAssignedUsers] = useState([]);
+  const { canManageRestaurants, isCustomer, isSuperadmin, isBuildingManager } = useRole();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    Promise.all([fetchRestaurants(), fetchBuildings()]);
+  }, []);
+
+  const fetchRestaurants = async () => {
+    try { const res = await restaurantAPI.getAll(); setRestaurants(res.data); }
+    catch { toast.error('Failed to load restaurants'); }
+    finally { setLoading(false); }
+  };
+
+  const fetchBuildings = async () => {
+    try { const res = await buildingAPI.getAll(); setBuildings(res.data); }
+    catch {}
+  };
+
+  const fetchUsers = async () => {
+    try { const res = await authAPI.getUsers(); setAllUsers(res.data); }
+    catch {}
+  };
+
+  const availableUsers = allUsers.filter(u =>
+    !u.isSuperadmin && ['RESTAURANT_MANAGER', 'CHEF'].includes(u.role)
+  );
+
+  const openCreate = () => {
+    setEditing(null);
+    const defaultBuildingId = isBuildingManager ? (user?.buildingId || '') : (buildings[0]?.id || '');
+    setForm({ name: '', description: '', cuisine: '', phone: '', buildingId: defaultBuildingId });
+    setAssignedUsers([]);
+    fetchUsers();
+    setModalOpen(true);
+  };
+
+  const openEdit = (rest) => {
+    setEditing(rest);
+    setForm({ name: rest.name, description: rest.description || '', cuisine: rest.cuisine || '', phone: rest.phone || '', buildingId: rest.buildingId });
+    fetchUsers();
+    setAssignedUsers([]);
+    setModalOpen(true);
+  };
+
+  const toggleUserAssignment = (userId) => {
+    setAssignedUsers(prev =>
+      prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+    );
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.buildingId) return toast.error('Name and building are required');
+    try {
+      const payload = { ...form, assignUserIds: assignedUsers };
+      if (editing) {
+        await restaurantAPI.update(editing.id, payload);
+        toast.success('Restaurant updated');
+      } else {
+        await restaurantAPI.create(payload);
+        toast.success('Restaurant created');
+      }
+      setModalOpen(false);
+      fetchRestaurants();
+    } catch (err) { toast.error(err.response?.data?.message || 'Operation failed'); }
+  };
+
+  const showQrCode = async (rest) => {
+    try {
+      const res = await restaurantAPI.getQrCode(rest.id);
+      setQrData(res.data);
+      setQrModalOpen(true);
+    } catch {
+      toast.error('Failed to generate QR code');
+    }
+  };
+
+  const downloadQrCode = () => {
+    if (!qrData) return;
+    const link = document.createElement('a');
+    link.download = `${qrData.restaurant}-qrcode.png`;
+    link.href = qrData.qrCode;
+    link.click();
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm('Are you sure?')) return;
+    try { await restaurantAPI.delete(id); toast.success('Deleted'); fetchRestaurants(); }
+    catch (err) { toast.error(err.response?.data?.message || 'Delete failed'); }
+  };
+
+  const columns = [
+    { key: 'name', label: 'Name' },
+    { key: 'cuisine', label: 'Cuisine' },
+    { key: 'building', label: 'Building', render: (val) => val?.name || '-' },
+    { key: 'phone', label: 'Phone' },
+    {
+      key: '_count', label: 'Menu Items / Users',
+      render: (val) => (
+        <div className="flex gap-2">
+          <Badge variant="info">{val?.menuItems || 0} items</Badge>
+          <Badge variant="purple">{val?.users || 0} users</Badge>
+        </div>
+      ),
+    },
+    {
+      key: 'isActive', label: 'Status',
+      render: (val) => <Badge variant={val ? 'success' : 'danger'}>{val ? 'Active' : 'Inactive'}</Badge>,
+    },
+    ...(!isCustomer ? [{
+      key: 'actions', label: 'Actions',
+      render: (_, row) => (
+        <div className="flex gap-2">
+          <button onClick={() => navigate(`/menu/${row.id}`)} className="p-1 hover:text-primary-600"><EyeIcon className="w-4 h-4" /></button>
+          <button onClick={() => showQrCode(row)} className="p-1 hover:text-primary-600"><QrCodeIcon className="w-4 h-4" /></button>
+          {canManageRestaurants && <button onClick={() => openEdit(row)} className="p-1 hover:text-primary-600"><PencilIcon className="w-4 h-4" /></button>}
+          {canManageRestaurants && <button onClick={() => handleDelete(row.id)} className="p-1 hover:text-red-600"><TrashIcon className="w-4 h-4" /></button>}
+        </div>
+      ),
+    }] : []),
+  ];
+
+  if (loading) return <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600" /></div>;
+
+  if (isCustomer) {
+    return (
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold">Restaurants</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {restaurants.filter(r => r.isActive).map((rest) => (
+            <Card key={rest.id} className="p-6 hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/menu/${rest.id}`)}>
+              <h3 className="text-lg font-semibold mb-1">{rest.name}</h3>
+              {rest.cuisine && <p className="text-sm text-primary-600 mb-2">{rest.cuisine}</p>}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{rest.building?.name}</p>
+              {rest.description && <p className="text-xs text-gray-400 mt-2">{rest.description}</p>}
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Restaurants</h1>
+        {canManageRestaurants && (
+          <Button onClick={openCreate}><PlusIcon className="w-4 h-4 mr-1" /> Add Restaurant</Button>
+        )}
+      </div>
+      <Card className="p-4 sm:p-6">
+        <Table columns={columns} data={restaurants} searchable />
+      </Card>
+      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit Restaurant' : 'Add Restaurant'} size="lg">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <Input label="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <Input label="Cuisine" value={form.cuisine} onChange={(e) => setForm({ ...form, cuisine: e.target.value })} />
+          <Input label="Phone" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Building *</label>
+            <select className="input-field" value={form.buildingId} onChange={(e) => setForm({ ...form, buildingId: e.target.value })} disabled={isBuildingManager}>
+              {isBuildingManager
+                ? buildings.filter(b => b.id === user?.buildingId).map(b => <option key={b.id} value={b.id}>{b.name}</option>)
+                : buildings.map(b => <option key={b.id} value={b.id}>{b.name}</option>)
+              }
+            </select>
+            {isBuildingManager && <p className="text-xs text-gray-400 mt-1">Building is fixed to your assigned building.</p>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+            <textarea className="input-field" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </div>
+
+          {isSuperadmin && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center gap-1">
+                <UserIcon className="w-4 h-4" /> Assign Restaurant Managers / Chefs
+              </label>
+              <div className="max-h-48 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg divide-y divide-gray-200 dark:divide-gray-700">
+                {availableUsers.length === 0 ? (
+                  <p className="p-3 text-sm text-gray-400 text-center">No available users</p>
+                ) : (
+                  availableUsers.map((u) => (
+                    <label key={u.id} className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={assignedUsers.includes(u.id)}
+                        onChange={() => toggleUserAssignment(u.id)}
+                        className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{u.username}</p>
+                        <p className="text-xs text-gray-400">{u.email} · <Badge variant="info">{ROLE_LABELS[u.role]}</Badge></p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+              <p className="text-xs text-gray-400 mt-1">{assignedUsers.length} user(s) selected</p>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button type="submit">{editing ? 'Update' : 'Create'}</Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal open={qrModalOpen} onClose={() => setQrModalOpen(false)} title="Restaurant QR Code">
+        {qrData && (
+          <div className="text-center space-y-4">
+            <p className="font-medium text-lg">{qrData.restaurant}</p>
+            <div className="bg-white p-6 rounded-xl inline-block shadow-sm border mx-auto">
+              <img src={qrData.qrCode} alt="QR Code" className="w-48 h-48 mx-auto" />
+            </div>
+            <p className="text-xs text-gray-400 break-all max-w-xs mx-auto">{qrData.menuUrl}</p>
+            <div className="flex gap-3 justify-center">
+              <Button onClick={downloadQrCode} variant="secondary">Download PNG</Button>
+              <Button onClick={() => { navigator.clipboard.writeText(qrData.menuUrl); toast.success('Link copied!'); }}>
+                Copy Link
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+}

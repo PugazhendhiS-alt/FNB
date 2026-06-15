@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String      @id @default(uuid())
+  username        String      @unique
+  email           String      @unique
+  password        String
+  role            String
+  phone           String?
+  isSuperadmin    Boolean     @default(false)
+  buildingId      String?
+  restaurantId    String?
+  building        Building?   @relation("BuildingUsers", fields: [buildingId], references: [id])
+  restaurant      Restaurant? @relation("RestaurantUsers", fields: [restaurantId], references: [id])
+  notifications   Notification[]
+  orders          Order[]     @relation("CustomerOrders")
+  createdOrders   Order[]     @relation("OrderCreator")
+  widgets         UserWidget[]
+  otps            Otp[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([role])
+  @@index([buildingId])
+  @@index([restaurantId])
+  @@index([isSuperadmin])
+}
+
+model Building {
+  id          String      @id @default(uuid())
+  name        String
+  address     String
+  phone       String?
+  description String?
+  isActive    Boolean     @default(true)
+  restaurants Restaurant[]
+  users       User[]      @relation("BuildingUsers")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([isActive])
+}
+
+model Restaurant {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  cuisine     String?
+  phone       String?
+  isActive    Boolean    @default(true)
+  buildingId  String
+  building    Building   @relation(fields: [buildingId], references: [id])
+  menuItems   MenuItem[]
+  users       User[]     @relation("RestaurantUsers")
+  orders      Order[]    @relation("RestaurantOrders")
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([buildingId])
+  @@index([isActive])
+}
+
+model MenuItem {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  price        Float
+  category     String?
+  image        String?
+  available    Boolean  @default(true)
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  orderItems   OrderItem[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([restaurantId])
+  @@index([available])
+  @@index([category])
+}
+
+model Order {
+  id            String       @id @default(uuid())
+  orderCode     String       @unique @default(uuid())
+  status        String   @default("PENDING_PAYMENT")
+  totalAmount   Float
+  paymentStatus String?
+  paymentMethod String?
+  transactionRef String?
+  customerId    String
+  customer      User         @relation("CustomerOrders", fields: [customerId], references: [id])
+  restaurantId  String
+  restaurant    Restaurant   @relation("RestaurantOrders", fields: [restaurantId], references: [id])
+  createdById   String?
+  createdBy     User?        @relation("OrderCreator", fields: [createdById], references: [id])
+  items         OrderItem[]
+  notifications Notification[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([status])
+  @@index([customerId])
+  @@index([restaurantId])
+  @@index([createdAt])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id         String   @id @default(uuid())
+  quantity   Int
+  unitPrice  Float
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id])
+  menuItemId String
+  menuItem   MenuItem @relation(fields: [menuItemId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@index([orderId])
+  @@index([menuItemId])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  message   String
+  type      String
+  read      Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  orderId   String?
+  order     Order?   @relation(fields: [orderId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([userId, read])
+}
+
+model Otp {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  code      String
+  type      String   @default("LOGIN")
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([code])
+}
+
+model UserWidget {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  title        String
+  widgetType   String
+  displayType  String
+  config       String   @default("{}")
+  layout       String   @default("{\"w\":1,\"h\":2}")
+  position     Int      @default(0)
+  isVisible    Boolean  @default(true)
+  isCustom     Boolean  @default(false)
+  customSource String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isVisible])
+}
