@@ -27,7 +27,7 @@ async function getAllPublic(req, res, next) {
     const restaurants = await prisma.restaurant.findMany({
       where: { isActive: true },
       select: {
-        id: true, name: true, description: true, cuisine: true, phone: true,
+        id: true, name: true, description: true, cuisine: true, phone: true, image: true,
         building: { select: { name: true } },
         _count: { select: { menuItems: true } },
       },
@@ -65,7 +65,7 @@ async function getByIdPublic(req, res, next) {
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: req.params.id },
       select: {
-        id: true, name: true, description: true, cuisine: true, phone: true,
+        id: true, name: true, description: true, cuisine: true, phone: true, image: true,
         building: { select: { name: true } },
         menuItems: { where: { available: true }, orderBy: [{ category: 'asc' }, { name: 'asc' }] },
       },
@@ -99,13 +99,13 @@ async function getQrCode(req, res, next) {
 
 async function create(req, res, next) {
   try {
-    const { name, description, cuisine, phone, buildingId: reqBuildingId, assignUserIds } = req.body;
+    const { name, description, cuisine, phone, image, buildingId: reqBuildingId, assignUserIds } = req.body;
     const buildingId = req.user.role === 'BUILDING_MANAGER' ? req.user.buildingId : reqBuildingId;
     if (!name || !buildingId) {
       return res.status(400).json({ message: 'Name and building are required.' });
     }
     const restaurant = await prisma.restaurant.create({
-      data: { name, description, cuisine, phone, buildingId },
+      data: { name, description, cuisine, phone, image, buildingId },
       include: { building: { select: { id: true, name: true } } },
     });
 
@@ -132,7 +132,7 @@ async function create(req, res, next) {
 async function update(req, res, next) {
   try {
     const { id } = req.params;
-    const { name, description, cuisine, phone, isActive, assignUserIds } = req.body;
+    const { name, description, cuisine, phone, image, isActive, assignUserIds } = req.body;
 
     if (req.user.role === 'BUILDING_MANAGER' && req.user.buildingId) {
       const existing = await prisma.restaurant.findUnique({ where: { id }, select: { buildingId: true } });
@@ -146,6 +146,7 @@ async function update(req, res, next) {
     if (description !== undefined) data.description = description;
     if (cuisine !== undefined) data.cuisine = cuisine;
     if (phone !== undefined) data.phone = phone;
+    if (image !== undefined) data.image = image;
     if (isActive !== undefined) data.isActive = isActive;
 
     const restaurant = await prisma.restaurant.update({

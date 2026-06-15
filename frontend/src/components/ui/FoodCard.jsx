@@ -11,7 +11,7 @@ function VegBadge({ isVeg }) {
 
 export default function FoodCard({
   item,
-  onEdit, onDelete, onDuplicate, onOrder,
+  onEdit, onDelete, onDuplicate, onToggleAvailable, onOrder,
   view = 'grid', // 'grid' | 'list'
   isCustomer = false,
 }) {
@@ -42,13 +42,27 @@ export default function FoodCard({
           <p className="text-xs text-gray-400 truncate">{item.category}{item.preparationTime ? ` · ${item.preparationTime} min` : ''}</p>
           <div className="flex items-center justify-between mt-1">
             <span className="text-sm font-bold text-primary-600">{formatCurrency(item.price)}</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-              item.available !== false
-                ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
-                : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-            }`}>
-              {item.available !== false ? 'Available' : 'Sold Out'}
-            </span>
+            {!isCustomer && onToggleAvailable && (
+              <button
+                onClick={() => onToggleAvailable(item)}
+                className={`text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors ${
+                  item.available !== false
+                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100'
+                    : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-100'
+                }`}
+              >
+                {item.available !== false ? 'Available' : 'Sold Out'}
+              </button>
+            )}
+            {isCustomer && (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                item.available !== false
+                  ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400'
+              }`}>
+                {item.available !== false ? 'Available' : 'Sold Out'}
+              </span>
+            )}
           </div>
         </div>
         {!isCustomer && (
@@ -106,16 +120,32 @@ export default function FoodCard({
         )}
         <div className="flex items-center justify-between mt-2.5">
           <span className="text-base font-bold text-primary-600 dark:text-primary-400">{formatCurrency(item.price)}</span>
-          {isCustomer && onOrder && item.available !== false && (
-            <button
-              onClick={() => onOrder(item)}
-              className="px-3 py-1 text-xs font-semibold rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/40 dark:text-primary-400 dark:hover:bg-primary-900/60 transition-colors active:scale-95"
-            >
-              + Add
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {!isCustomer && onToggleAvailable && (
+              <button
+                onClick={() => onToggleAvailable(item)}
+                className={`text-[10px] px-2 py-0.5 rounded-full font-medium transition-colors ${
+                  item.available !== false
+                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-100'
+                    : 'bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-100'
+                }`}
+              >
+                {item.available !== false ? 'Available' : 'Sold Out'}
+              </button>
+            )}
+            {isCustomer && onOrder && item.available !== false && (
+              <button
+                onClick={() => onOrder(item)}
+                className="px-3 py-1 text-xs font-semibold rounded-lg bg-primary-50 text-primary-600 hover:bg-primary-100 dark:bg-primary-900/40 dark:text-primary-400 dark:hover:bg-primary-900/60 transition-colors active:scale-95"
+              >
+                + Add
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+
+

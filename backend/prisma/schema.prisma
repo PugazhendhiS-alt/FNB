@@ -14,6 +14,7 @@ model User {
   password        String
   role            String
   phone           String?
+  avatar          String?
   isSuperadmin    Boolean     @default(false)
   buildingId      String?
   restaurantId    String?
@@ -40,6 +41,7 @@ model Building {
   address     String
   phone       String?
   description String?
+  image       String?
   isActive    Boolean     @default(true)
   restaurants Restaurant[]
   users       User[]      @relation("BuildingUsers")
@@ -55,6 +57,7 @@ model Restaurant {
   description String?
   cuisine     String?
   phone       String?
+  image       String?
   isActive    Boolean    @default(true)
   buildingId  String
   building    Building   @relation(fields: [buildingId], references: [id])

@@ -33,12 +33,12 @@ async function getById(req, res, next) {
 
 async function create(req, res, next) {
   try {
-    const { name, address, phone, description, assignUserIds } = req.body;
+    const { name, address, phone, description, image, assignUserIds } = req.body;
     if (!name || !address) {
       return res.status(400).json({ message: 'Name and address are required.' });
     }
     const building = await prisma.building.create({
-      data: { name, address, phone, description },
+      data: { name, address, phone, description, image },
     });
 
     if (assignUserIds && assignUserIds.length > 0) {
@@ -63,12 +63,13 @@ async function create(req, res, next) {
 async function update(req, res, next) {
   try {
     const { id } = req.params;
-    const { name, address, phone, description, isActive, assignUserIds } = req.body;
+    const { name, address, phone, description, image, isActive, assignUserIds } = req.body;
     const data = {};
     if (name) data.name = name;
     if (address) data.address = address;
     if (phone !== undefined) data.phone = phone;
     if (description !== undefined) data.description = description;
+    if (image !== undefined) data.image = image;
     if (isActive !== undefined) data.isActive = isActive;
 
     const building = await prisma.building.update({

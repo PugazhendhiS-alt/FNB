@@ -12,7 +12,7 @@ import Table from '../components/ui/Table';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
 import { ROLE_LABELS } from '../lib/constants';
-import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, UserIcon, QrCodeIcon, HomeModernIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, UserIcon, QrCodeIcon, HomeModernIcon, PhotoIcon } from '@heroicons/react/24/outline';
 
 export default function Restaurants() {
   const [restaurants, setRestaurants] = useState([]);
@@ -23,7 +23,8 @@ export default function Restaurants() {
   const [qrModalOpen, setQrModalOpen] = useState(false);
   const [qrData, setQrData] = useState(null);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', cuisine: '', phone: '', buildingId: '' });
+  const [form, setForm] = useState({ name: '', description: '', cuisine: '', phone: '', image: '', buildingId: '' });
+  const [imagePreview, setImagePreview] = useState('');
   const [assignedUsers, setAssignedUsers] = useState([]);
   const { canManageRestaurants, isCustomer, isSuperadmin, isBuildingManager } = useRole();
   const { user } = useAuth();
@@ -53,10 +54,33 @@ export default function Restaurants() {
     !u.isSuperadmin && ['RESTAURANT_MANAGER', 'CHEF'].includes(u.role)
   );
 
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return toast.error('Image must be under 2MB');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setImagePreview(ev.target.result);
+      setForm({ ...form, image: ev.target.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const toggleActive = async (rest) => {
+    try {
+      await restaurantAPI.update(rest.id, { isActive: !rest.isActive });
+      toast.success(rest.isActive ? 'Restaurant deactivated' : 'Restaurant activated');
+      fetchRestaurants();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to toggle status');
+    }
+  };
+
   const openCreate = () => {
     setEditing(null);
     const defaultBuildingId = isBuildingManager ? (user?.buildingId || '') : (buildings[0]?.id || '');
-    setForm({ name: '', description: '', cuisine: '', phone: '', buildingId: defaultBuildingId });
+    setForm({ name: '', description: '', cuisine: '', phone: '', image: '', buildingId: defaultBuildingId });
+    setImagePreview('');
     setAssignedUsers([]);
     fetchUsers();
     setModalOpen(true);
@@ -64,7 +88,8 @@ export default function Restaurants() {
 
   const openEdit = (rest) => {
     setEditing(rest);
-    setForm({ name: rest.name, description: rest.description || '', cuisine: rest.cuisine || '', phone: rest.phone || '', buildingId: rest.buildingId });
+    setForm({ name: rest.name, description: rest.description || '', cuisine: rest.cuisine || '', phone: rest.phone || '', image: rest.image || '', buildingId: rest.buildingId });
+    setImagePreview(rest.image || '');
     fetchUsers();
     setAssignedUsers([]);
     setModalOpen(true);
@@ -118,6 +143,10 @@ export default function Restaurants() {
   };
 
   const columns = [
+    {
+      key: 'image', label: '',
+      render: (val) => val ? <img src={val} alt="" className="w-10 h-10 rounded-lg object-cover" /> : <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center"><HomeModernIcon className="w-5 h-5 text-gray-400" /></div>,
+    },
     { key: 'name', label: 'Name' },
     { key: 'cuisine', label: 'Cuisine' },
     { key: 'building', label: 'Building', render: (val) => val?.name || '-' },
@@ -133,7 +162,14 @@ export default function Restaurants() {
     },
     {
       key: 'isActive', label: 'Status',
-      render: (val) => <Badge variant={val ? 'success' : 'danger'}>{val ? 'Active' : 'Inactive'}</Badge>,
+      render: (val, row) => (
+        <button
+          onClick={() => toggleActive(row)}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${val ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'}`}
+        >
+          <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${val ? 'translate-x-6' : 'translate-x-1'}`} />
+        </button>
+      ),
     },
     ...(!isCustomer ? [{
       key: 'actions', label: 'Actions',
@@ -222,6 +258,20 @@ export default function Restaurants() {
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
             <textarea className="input-field" rows={3} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image</label>
+            <div className="flex items-center gap-3">
+              {imagePreview ? (
+                <img src={imagePreview} alt="Preview" className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700" />
+              ) : (
+                <div className="w-16 h-16 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                  <PhotoIcon className="w-6 h-6 text-gray-400" />
+                </div>
+              )}
+              <input type="file" accept="image/*" onChange={handleImageChange} className="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-400" />
+              {imagePreview && <button type="button" onClick={() => { setImagePreview(''); setForm({ ...form, image: '' }); }} className="text-xs text-red-500 hover:underline">Remove</button>}
+            </div>
           </div>
 
           {isSuperadmin && (

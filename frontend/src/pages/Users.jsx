@@ -10,7 +10,7 @@ import Input from '../components/ui/Input';
 import Table from '../components/ui/Table';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
-import { PlusIcon, PencilIcon, TrashIcon, UsersIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, UsersIcon, PhotoIcon } from '@heroicons/react/24/outline';
 
 const roleOptions = Object.entries(ROLE_LABELS);
 
@@ -23,8 +23,9 @@ export default function Users() {
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({
     username: '', email: '', password: '', role: 'CUSTOMER',
-    phone: '', buildingId: '', restaurantId: '',
+    phone: '', avatar: '', buildingId: '', restaurantId: '',
   });
+  const [avatarPreview, setAvatarPreview] = useState('');
   const { isAdmin, isSuperadmin, currentRole } = useRole();
 
   useEffect(() => { Promise.all([fetchUsers(), fetchBuildings(), fetchRestaurants()]); }, []);
@@ -51,9 +52,22 @@ export default function Users() {
     } catch {}
   };
 
+  const handleAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) return toast.error('Image must be under 2MB');
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setAvatarPreview(ev.target.result);
+      setForm({ ...form, avatar: ev.target.result });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const openCreate = () => {
     setEditing(null);
-    setForm({ username: '', email: '', password: '', role: 'CUSTOMER', phone: '', buildingId: '', restaurantId: '' });
+    setForm({ username: '', email: '', password: '', role: 'CUSTOMER', phone: '', avatar: '', buildingId: '', restaurantId: '' });
+    setAvatarPreview('');
     setModalOpen(true);
   };
 
@@ -61,9 +75,11 @@ export default function Users() {
     setEditing(user);
     setForm({
       username: user.username, email: user.email, password: '',
-      role: user.role, phone: user.phone || '', buildingId: user.buildingId || '',
+      role: user.role, phone: user.phone || '', avatar: user.avatar || '',
+      buildingId: user.buildingId || '',
       restaurantId: user.restaurantId || '',
     });
+    setAvatarPreview(user.avatar || '');
     setModalOpen(true);
   };
 
@@ -112,6 +128,10 @@ export default function Users() {
   const requiresRestaurant = (role) => ['RESTAURANT_MANAGER', 'CHEF'].includes(role);
 
   const columns = [
+    {
+      key: 'avatar', label: '',
+      render: (val) => val ? <img src={val} alt="" className="w-9 h-9 rounded-full object-cover" /> : <div className="w-9 h-9 rounded-full bg-primary-100 dark:bg-primary-900/40 flex items-center justify-center text-xs font-bold text-primary-600"><UsersIcon className="w-5 h-5" /></div>,
+    },
     { key: 'username', label: 'Username' },
     { key: 'email', label: 'Email' },
     {
@@ -162,6 +182,19 @@ export default function Users() {
 
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title={editing ? 'Edit User' : 'Add User'} size="lg">
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="flex items-center gap-4 mb-2">
+            {avatarPreview ? (
+              <img src={avatarPreview} alt="Avatar" className="w-16 h-16 rounded-full object-cover border border-gray-200 dark:border-gray-700" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+                <PhotoIcon className="w-7 h-7 text-gray-400" />
+              </div>
+            )}
+            <div>
+              <input type="file" accept="image/*" onChange={handleAvatarChange} className="text-sm text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary-50 file:text-primary-600 hover:file:bg-primary-100 dark:file:bg-primary-900/30 dark:file:text-primary-400" />
+              {avatarPreview && <button type="button" onClick={() => { setAvatarPreview(''); setForm({ ...form, avatar: '' }); }} className="text-xs text-red-500 hover:underline mt-1 block">Remove</button>}
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <Input label="Username *" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} />
             <Input label="Email *" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />

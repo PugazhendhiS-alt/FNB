@@ -98,7 +98,7 @@ async function getAllUsers(req, res, next) {
     if (req.query.role) where.role = req.query.role;
     const users = await prisma.user.findMany({
       where,
-      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, buildingId: true, restaurantId: true, phone: true, createdAt: true },
+      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, avatar: true, buildingId: true, restaurantId: true, phone: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
       take: 200,
     });
@@ -110,11 +110,11 @@ async function getAllUsers(req, res, next) {
 
 async function createUser(req, res, next) {
   try {
-    const { username, email, password, role, phone, buildingId, restaurantId } = req.body;
+    const { username, email, password, role, phone, avatar, buildingId, restaurantId } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { username, email, password: hashedPassword, role, phone, buildingId, restaurantId },
-      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, buildingId: true, restaurantId: true, createdAt: true },
+      data: { username, email, password: hashedPassword, role, phone, avatar, buildingId, restaurantId },
+      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, avatar: true, buildingId: true, restaurantId: true, createdAt: true },
     });
     res.status(201).json(user);
   } catch (err) {
@@ -125,20 +125,21 @@ async function createUser(req, res, next) {
 async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
-    const { username, email, password, role, phone, buildingId, restaurantId } = req.body;
+    const { username, email, password, role, phone, avatar, buildingId, restaurantId } = req.body;
     const data = {};
     if (username) data.username = username;
     if (email) data.email = email;
     if (password) data.password = await bcrypt.hash(password, 10);
     if (role) data.role = role;
     if (phone !== undefined) data.phone = phone;
+    if (avatar !== undefined) data.avatar = avatar;
     if (buildingId !== undefined) data.buildingId = buildingId;
     if (restaurantId !== undefined) data.restaurantId = restaurantId;
 
     const user = await prisma.user.update({
       where: { id },
       data,
-      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, buildingId: true, restaurantId: true, createdAt: true },
+      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, avatar: true, buildingId: true, restaurantId: true, createdAt: true },
     });
     res.json(user);
   } catch (err) {

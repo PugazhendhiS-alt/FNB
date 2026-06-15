@@ -9,7 +9,7 @@ async function getAllPublic(req, res, next) {
 
     const items = await prisma.menuItem.findMany({
       where,
-      select: { id: true, name: true, description: true, price: true, category: true, restaurantId: true },
+      select: { id: true, name: true, description: true, price: true, category: true, image: true, restaurantId: true },
       orderBy: [{ category: 'asc' }, { name: 'asc' }],
     });
     res.json(items);
@@ -20,7 +20,7 @@ async function getByIdPublic(req, res, next) {
   try {
     const item = await prisma.menuItem.findUnique({
       where: { id: req.params.id },
-      select: { id: true, name: true, description: true, price: true, category: true, restaurantId: true },
+      select: { id: true, name: true, description: true, price: true, category: true, image: true, restaurantId: true },
     });
     if (!item) return res.status(404).json({ message: 'Menu item not found.' });
     res.json(item);
