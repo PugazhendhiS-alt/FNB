@@ -426,11 +426,11 @@ export default function Login() {
           <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700/50">
             <p className="text-xs font-medium text-gray-500 mb-2">Demo Credentials:</p>
             <div className="space-y-1.5">
-              <p className="text-xs text-gray-400"><span className="font-mono">Superadmin</span> / <span className="font-mono">Admin12345</span> <span className="text-gray-500">— all access</span></p>
+              <p className="text-xs text-gray-400"><span className="font-mono">Superadmin</span> / <span className="font-mono">Admin12345</span> <span className="text-gray-500">— Super Admin</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">admin1</span> / <span className="font-mono">admin123</span> <span className="text-gray-500">— Admin</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">bldmgr1</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Building Manager</span></p>
-              <p className="text-xs text-gray-400"><span className="font-mono">restmgr1</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Tandoori Tadka</span></p>
-              <p className="text-xs text-gray-400"><span className="font-mono">restmgr2</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Dosa Express</span></p>
+              <p className="text-xs text-gray-400"><span className="font-mono">restmgr1</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Restaurant Manager</span></p>
+              <p className="text-xs text-gray-400"><span className="font-mono">restmgr2</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Restaurant Manager</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">chef1</span> / <span className="font-mono">chef123</span> <span className="text-gray-500">— Chef</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">customer1</span> / <span className="font-mono">customer123</span> <span className="text-gray-500">— Customer</span></p>
             </div>
