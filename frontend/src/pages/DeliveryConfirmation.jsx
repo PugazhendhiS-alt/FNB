@@ -6,8 +6,9 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
+import QRScanner from '../components/QRScanner';
 import { formatCurrency, formatDate, getStatusLabel } from '../lib/utils';
-import { CheckCircleIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, MagnifyingGlassIcon, QrCodeIcon } from '@heroicons/react/24/outline';
 
 export default function DeliveryConfirmation() {
   const [orderCode, setOrderCode] = useState('');
@@ -15,6 +16,7 @@ export default function DeliveryConfirmation() {
   const [loading, setLoading] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
   const codeInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -60,6 +62,20 @@ export default function DeliveryConfirmation() {
     codeInputRef.current?.focus();
   };
 
+  const handleScan = (code) => {
+    setShowScanner(false);
+    setOrderCode(code);
+    setOrder(null);
+    setConfirmed(false);
+    setTimeout(() => {
+      orderAPI.getByCode(code).then(res => {
+        setOrder(res.data);
+      }).catch(() => {
+        toast.error('Order not found with this code');
+      });
+    }, 300);
+  };
+
   return (
     <div className="max-w-xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">Confirm Delivery</h1>
@@ -86,6 +102,9 @@ export default function DeliveryConfirmation() {
             maxLength={6}
             autoFocus
           />
+          <Button onClick={() => setShowScanner(true)} variant="secondary" title="Scan QR Code">
+            <QrCodeIcon className="w-5 h-5" />
+          </Button>
           <Button onClick={lookupOrder} disabled={orderCode.length !== 6 || loading}>
             {loading ? '...' : 'Lookup'}
           </Button>
@@ -153,6 +172,8 @@ export default function DeliveryConfirmation() {
           </div>
         )}
       </Card>
+
+      {showScanner && <QRScanner onScan={handleScan} onClose={() => setShowScanner(false)} />}
     </div>
   );
 }

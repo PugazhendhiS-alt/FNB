@@ -92,7 +92,6 @@ pos-system/
 | Username | Password | Role |
 |----------|----------|------|
 | Superadmin | Admin12345 | Super Admin |
-| admin1 | admin123 | Admin |
 | bldmgr1 | bldmgr123 | Building Manager |
 | restmgr1 | restmgr123 | Restaurant Manager |
 | chef1 | chef123 | Chef |
