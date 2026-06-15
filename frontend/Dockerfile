@@ -1,5 +1,8 @@
 FROM node:20-alpine AS build
 
+ARG VITE_API_URL
+ARG VITE_SOCKET_URL
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
