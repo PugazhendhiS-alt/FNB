@@ -18,8 +18,8 @@ const ROWS = [
     icon: ChartBarIcon,
     layout: '70-30',
     widgets: [
-      { id: 'sales', Component: SalesWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER'] },
-      { id: 'orders', Component: OrdersWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
+      { id: 'sales', Component: SalesWidget, roles: ['SUPERADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER'] },
+      { id: 'orders', Component: OrdersWidget, roles: ['SUPERADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
     ],
   },
   {
@@ -29,9 +29,9 @@ const ROWS = [
     icon: ClipboardDocumentListIcon,
     layout: '3-col',
     widgets: [
-      { id: 'kitchen', Component: KitchenWidget, roles: ['SUPERADMIN', 'ADMIN', 'RESTAURANT_MANAGER', 'CHEF'] },
-      { id: 'inventory', Component: InventoryWidget, roles: ['SUPERADMIN', 'ADMIN', 'RESTAURANT_MANAGER'] },
-      { id: 'customers', Component: CustomerWidget, roles: ['SUPERADMIN', 'ADMIN'] },
+      { id: 'kitchen', Component: KitchenWidget, roles: ['SUPERADMIN', 'RESTAURANT_MANAGER', 'CHEF'] },
+      { id: 'inventory', Component: InventoryWidget, roles: ['SUPERADMIN', 'RESTAURANT_MANAGER'] },
+      { id: 'customers', Component: CustomerWidget, roles: ['SUPERADMIN'] },
     ],
   },
   {
@@ -41,9 +41,9 @@ const ROWS = [
     icon: BuildingOffice2Icon,
     layout: '3-col',
     widgets: [
-      { id: 'notifications', Component: NotificationWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
-      { id: 'staff', Component: StaffWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER'] },
-      { id: 'payments', Component: PaymentWidget, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER'] },
+      { id: 'notifications', Component: NotificationWidget, roles: ['SUPERADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF'] },
+      { id: 'staff', Component: StaffWidget, roles: ['SUPERADMIN', 'BUILDING_MANAGER'] },
+      { id: 'payments', Component: PaymentWidget, roles: ['SUPERADMIN', 'BUILDING_MANAGER'] },
     ],
   },
 ];

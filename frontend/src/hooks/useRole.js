@@ -6,7 +6,6 @@ export function useRole() {
   const effectiveRole = user?.role || (isGuest ? 'CUSTOMER' : null);
 
   const isSuperadmin = user?.isSuperadmin || user?.role === 'SUPERADMIN';
-  const isAdmin = effectiveRole === 'ADMIN' || isSuperadmin;
   const isBuildingManager = effectiveRole === 'BUILDING_MANAGER' || isSuperadmin;
   const isRestaurantManager = effectiveRole === 'RESTAURANT_MANAGER' || isSuperadmin;
   const isChef = effectiveRole === 'CHEF' || isSuperadmin;
@@ -14,17 +13,17 @@ export function useRole() {
 
   const currentRole = user?.activeRole || effectiveRole;
 
-  const canManageBuildings = isSuperadmin || isAdmin;
-  const canEditBuilding = isSuperadmin || isAdmin || isBuildingManager;
-  const canManageRestaurants = isSuperadmin || isAdmin || isBuildingManager;
-  const canDeleteRestaurant = isSuperadmin || isAdmin;
-  const canManageMenu = isAdmin || isRestaurantManager;
-  const canManageOrders = isAdmin || isRestaurantManager || isChef;
+  const canManageBuildings = isSuperadmin;
+  const canEditBuilding = isSuperadmin || isBuildingManager;
+  const canManageRestaurants = isSuperadmin || isBuildingManager;
+  const canDeleteRestaurant = isSuperadmin;
+  const canManageMenu = isRestaurantManager || isSuperadmin;
+  const canManageOrders = isRestaurantManager || isChef || isSuperadmin;
   const canViewDashboard = true;
   const canPlaceOrders = isCustomer;
 
   return {
-    isSuperadmin, isAdmin, isBuildingManager, isRestaurantManager, isChef, isCustomer,
+    isSuperadmin, isBuildingManager, isRestaurantManager, isChef, isCustomer,
     currentRole, canManageBuildings, canEditBuilding, canManageRestaurants, canDeleteRestaurant, canManageMenu,
     canManageOrders, canViewDashboard, canPlaceOrders,
   };

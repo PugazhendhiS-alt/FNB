@@ -78,7 +78,7 @@ async function switchRole(req, res, next) {
       return res.status(403).json({ message: 'Only superadmin can switch roles.' });
     }
     const { role } = req.body;
-    const validRoles = ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF', 'CUSTOMER'];
+    const validRoles = ['SUPERADMIN', 'BUILDING_MANAGER', 'RESTAURANT_MANAGER', 'CHEF', 'CUSTOMER'];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ message: 'Invalid role.' });
     }

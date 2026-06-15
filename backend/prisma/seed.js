@@ -39,13 +39,11 @@ async function main() {
   const restaurant2 = await buildRestaurant('Dosa Express', 'South Indian classics and filter coffee', 'South Indian', '+91-124-4567892', building1);
   const restaurant3 = await buildRestaurant('Roll & Wok', 'Asian fusion rolls and street food', 'Asian', '+91-22-6789013', building2);
 
-  const adminPassword = await bcrypt.hash('admin123', 10);
   const managerPassword = await bcrypt.hash('manager123', 10);
   const chefPassword = await bcrypt.hash('chef123', 10);
   const customerPassword = await bcrypt.hash('customer123', 10);
 
   const users = [
-    { username: 'admin1', email: 'admin@pos.com', password: adminPassword, role: 'ADMIN' },
     { username: 'bldmgr1', email: 'bldmgr@pos.com', password: managerPassword, role: 'BUILDING_MANAGER', buildingId: building1.id },
     { username: 'restmgr1', email: 'restmgr@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant1.id },
     { username: 'restmgr2', email: 'restmgr2@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant2.id },
@@ -62,18 +60,18 @@ async function main() {
   }
 
   const menuItems = [
-    { name: 'Butter Chicken', description: 'Creamy tomato-based curry with tender chicken', price: 349, category: 'Main Course', restaurantId: restaurant1.id },
-    { name: 'Chicken Biryani', description: 'Fragrant basmati rice with spiced chicken', price: 299, category: 'Main Course', restaurantId: restaurant1.id },
-    { name: 'Garlic Naan', description: 'Tandoor-baked bread brushed with garlic butter', price: 49, category: 'Bread', restaurantId: restaurant1.id },
-    { name: 'Veg Samosa (3 pcs)', description: 'Crispy pastry filled with spiced potatoes', price: 79, category: 'Appetizer', restaurantId: restaurant1.id },
-    { name: 'Masala Dosa', description: 'Crispy rice crepe with spiced potato filling', price: 199, category: 'South Indian', restaurantId: restaurant2.id },
-    { name: 'Idli Sambar (2 pcs)', description: 'Steamed rice cakes with lentil soup and chutney', price: 129, category: 'South Indian', restaurantId: restaurant2.id },
-    { name: 'Filter Coffee', description: 'South Indian style filter coffee', price: 49, category: 'Beverage', restaurantId: restaurant2.id },
-    { name: 'Vada Pav', description: 'Spiced potato fritter in a bun with chutney', price: 59, category: 'Street Food', restaurantId: restaurant2.id },
-    { name: 'Egg Roll', description: 'Kolkata-style egg roll with onions and chutney', price: 149, category: 'Rolls', restaurantId: restaurant3.id },
-    { name: 'Chicken Tikka Wrap', description: 'Tandoori chicken wrapped in paratha', price: 249, category: 'Rolls', restaurantId: restaurant3.id },
-    { name: 'Hakka Noodles', description: 'Stir-fried noodles with vegetables', price: 179, category: 'Asian', restaurantId: restaurant3.id },
-    { name: 'Gobi Manchurian', description: 'Crispy cauliflower in spicy soy-ginger sauce', price: 159, category: 'Appetizer', restaurantId: restaurant3.id },
+    { name: 'Butter Chicken', description: 'Creamy tomato-based curry with tender chicken', price: 349, category: 'Main Course', foodCategory: 'NON_VEG', restaurantId: restaurant1.id },
+    { name: 'Chicken Biryani', description: 'Fragrant basmati rice with spiced chicken', price: 299, category: 'Main Course', foodCategory: 'NON_VEG', restaurantId: restaurant1.id },
+    { name: 'Garlic Naan', description: 'Tandoor-baked bread brushed with garlic butter', price: 49, category: 'Bread', foodCategory: 'VEG', restaurantId: restaurant1.id },
+    { name: 'Veg Samosa (3 pcs)', description: 'Crispy pastry filled with spiced potatoes', price: 79, category: 'Appetizer', foodCategory: 'VEG', restaurantId: restaurant1.id },
+    { name: 'Masala Dosa', description: 'Crispy rice crepe with spiced potato filling', price: 199, category: 'South Indian', foodCategory: 'VEG', restaurantId: restaurant2.id },
+    { name: 'Idli Sambar (2 pcs)', description: 'Steamed rice cakes with lentil soup and chutney', price: 129, category: 'South Indian', foodCategory: 'VEG', restaurantId: restaurant2.id },
+    { name: 'Filter Coffee', description: 'South Indian style filter coffee', price: 49, category: 'Beverage', foodCategory: 'VEGAN', restaurantId: restaurant2.id },
+    { name: 'Vada Pav', description: 'Spiced potato fritter in a bun with chutney', price: 59, category: 'Street Food', foodCategory: 'VEG', restaurantId: restaurant2.id },
+    { name: 'Egg Roll', description: 'Kolkata-style egg roll with onions and chutney', price: 149, category: 'Rolls', foodCategory: 'NON_VEG', restaurantId: restaurant3.id },
+    { name: 'Chicken Tikka Wrap', description: 'Tandoori chicken wrapped in paratha', price: 249, category: 'Rolls', foodCategory: 'NON_VEG', restaurantId: restaurant3.id },
+    { name: 'Hakka Noodles', description: 'Stir-fried noodles with vegetables', price: 179, category: 'Asian', foodCategory: 'VEG', restaurantId: restaurant3.id },
+    { name: 'Gobi Manchurian', description: 'Crispy cauliflower in spicy soy-ginger sauce', price: 159, category: 'Appetizer', foodCategory: 'VEG', restaurantId: restaurant3.id },
   ];
 
   for (const item of menuItems) {
@@ -116,7 +114,7 @@ async function main() {
 
   console.log('Seed completed successfully!');
   console.log('Superadmin created: username=Superadmin, password=Admin12345');
-  console.log('Sample users created with passwords: admin123, manager123, chef123, customer123');
+  console.log('Sample users created with passwords: manager123, chef123, customer123');
   console.log('Food Cards created for customers with PIN: 1234');
 }
 

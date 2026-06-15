@@ -27,7 +27,7 @@ export default function Menu() {
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
-  const [form, setForm] = useState({ name: '', description: '', price: '', category: '', image: '', restaurantId: '' });
+  const [form, setForm] = useState({ name: '', description: '', price: '', category: '', foodCategory: 'VEG', image: '', restaurantId: '' });
   const [imagePreview, setImagePreview] = useState('');
   const [allRestaurants, setAllRestaurants] = useState([]);
   const [filterRestaurantId, setFilterRestaurantId] = useState('');
@@ -100,14 +100,14 @@ export default function Menu() {
   const openCreate = () => {
     setEditing(null);
     const defaultRestaurantId = restaurantId || (isRestaurantManager ? user?.restaurantId : filterRestaurantId) || '';
-    setForm({ name: '', description: '', price: '', category: '', image: '', restaurantId: defaultRestaurantId });
+    setForm({ name: '', description: '', price: '', category: '', foodCategory: 'VEG', image: '', restaurantId: defaultRestaurantId });
     setImagePreview('');
     setModalOpen(true);
   };
 
   const openEdit = (item) => {
     setEditing(item);
-    setForm({ name: item.name, description: item.description || '', price: String(item.price), category: item.category || '', image: item.image || '', restaurantId: item.restaurantId });
+    setForm({ name: item.name, description: item.description || '', price: String(item.price), category: item.category || '', foodCategory: item.foodCategory || 'VEG', image: item.image || '', restaurantId: item.restaurantId });
     setImagePreview(item.image || '');
     setModalOpen(true);
   };
@@ -294,6 +294,33 @@ export default function Menu() {
           <Input label="Name *" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           <Input label="Price *" type="number" step="0.01" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
           <Input label="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Food Type</label>
+            <div className="flex gap-4">
+              {[
+                { value: 'VEG', label: 'Veg', icon: '🟢' },
+                { value: 'NON_VEG', label: 'Non-Veg', icon: '🔴' },
+                { value: 'VEGAN', label: 'Vegan', icon: '🌱' },
+              ].map(fc => (
+                <label key={fc.value} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${
+                  form.foodCategory === fc.value
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/30 dark:border-primary-600'
+                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
+                }`}>
+                  <input
+                    type="radio"
+                    name="foodCategory"
+                    value={fc.value}
+                    checked={form.foodCategory === fc.value}
+                    onChange={(e) => setForm({ ...form, foodCategory: e.target.value })}
+                    className="sr-only"
+                  />
+                  <span>{fc.icon}</span>
+                  <span className="text-sm font-medium">{fc.label}</span>
+                </label>
+              ))}
+            </div>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
             <textarea className="input-field" rows={2} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />

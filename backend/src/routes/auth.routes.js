@@ -12,9 +12,9 @@ router.post('/guest', otpCtrl.guestLogin);
 router.get('/profile', authenticate, ctrl.getProfile);
 router.post('/switch-role', authenticate, ctrl.switchRole);
 
-router.get('/users', authenticate, authorize(roles.SUPERADMIN, roles.ADMIN), ctrl.getAllUsers);
-router.post('/users', authenticate, authorize(roles.SUPERADMIN, roles.ADMIN), ctrl.createUser);
-router.put('/users/:id', authenticate, authorize(roles.SUPERADMIN, roles.ADMIN), ctrl.updateUser);
-router.delete('/users/:id', authenticate, authorize(roles.SUPERADMIN, roles.ADMIN), ctrl.deleteUser);
+router.get('/users', authenticate, authorize(roles.SUPERADMIN), ctrl.getAllUsers);
+router.post('/users', authenticate, authorize(roles.SUPERADMIN), ctrl.createUser);
+router.put('/users/:id', authenticate, authorize(roles.SUPERADMIN), ctrl.updateUser);
+router.delete('/users/:id', authenticate, authorize(roles.SUPERADMIN), ctrl.deleteUser);
 
 module.exports = router;

@@ -41,7 +41,7 @@ export default function Buildings() {
   };
 
   const availableUsers = allUsers.filter(u => 
-    !u.isSuperadmin && ['ADMIN', 'BUILDING_MANAGER'].includes(u.role)
+    !u.isSuperadmin && ['BUILDING_MANAGER'].includes(u.role)
   );
 
   const handleImageChange = (e) => {

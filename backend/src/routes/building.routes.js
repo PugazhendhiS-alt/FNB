@@ -5,8 +5,8 @@ const ctrl = require('../controllers/building.controller');
 
 router.get('/', authenticate, ctrl.getAll);
 router.get('/:id', authenticate, ctrl.getById);
-router.post('/', authenticate, authorize(roles.SUPERADMIN, roles.ADMIN), ctrl.create);
-router.put('/:id', authenticate, authorize(roles.SUPERADMIN, roles.ADMIN, roles.BUILDING_MANAGER), ctrl.update);
-router.delete('/:id', authenticate, authorize(roles.SUPERADMIN, roles.ADMIN), ctrl.remove);
+router.post('/', authenticate, authorize(roles.SUPERADMIN, roles.BUILDING_MANAGER), ctrl.create);
+router.put('/:id', authenticate, authorize(roles.SUPERADMIN, roles.BUILDING_MANAGER), ctrl.update);
+router.delete('/:id', authenticate, authorize(roles.SUPERADMIN), ctrl.remove);
 
 module.exports = router;

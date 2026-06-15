@@ -257,7 +257,7 @@ function UsersByRoleView({ data }) {
           label={ROLE_LABELS[item.role] || item.role}
           value={item.count}
           max={total}
-          color={item.role === 'SUPERADMIN' ? 'purple' : item.role === 'ADMIN' ? 'blue' : item.role === 'BUILDING_MANAGER' ? 'yellow' : item.role === 'RESTAURANT_MANAGER' ? 'teal' : item.role === 'CHEF' ? 'green' : 'gray'}
+          color={item.role === 'SUPERADMIN' ? 'purple' : item.role === 'BUILDING_MANAGER' ? 'yellow' : item.role === 'RESTAURANT_MANAGER' ? 'teal' : item.role === 'CHEF' ? 'green' : 'gray'}
         />
       ))}
     </div>

@@ -9,7 +9,7 @@ async function getAllPublic(req, res, next) {
 
     const items = await prisma.menuItem.findMany({
       where,
-      select: { id: true, name: true, description: true, price: true, category: true, image: true, restaurantId: true },
+      select: { id: true, name: true, description: true, price: true, category: true, foodCategory: true, image: true, restaurantId: true },
       orderBy: [{ category: 'asc' }, { name: 'asc' }],
     });
     res.json(items);
@@ -20,7 +20,7 @@ async function getByIdPublic(req, res, next) {
   try {
     const item = await prisma.menuItem.findUnique({
       where: { id: req.params.id },
-      select: { id: true, name: true, description: true, price: true, category: true, image: true, restaurantId: true },
+      select: { id: true, name: true, description: true, price: true, category: true, foodCategory: true, image: true, restaurantId: true },
     });
     if (!item) return res.status(404).json({ message: 'Menu item not found.' });
     res.json(item);
@@ -64,12 +64,12 @@ async function getById(req, res, next) {
 
 async function create(req, res, next) {
   try {
-    const { name, description, price, category, image, restaurantId } = req.body;
+    const { name, description, price, category, foodCategory, image, restaurantId } = req.body;
     if (!name || !price || !restaurantId) {
       return res.status(400).json({ message: 'Name, price, and restaurant are required.' });
     }
     const item = await prisma.menuItem.create({
-      data: { name, description, price: parseFloat(price), category, image, restaurantId },
+      data: { name, description, price: parseFloat(price), category, foodCategory, image, restaurantId },
       include: { restaurant: { select: { id: true, name: true } } },
     });
     res.status(201).json(item);
@@ -81,12 +81,13 @@ async function create(req, res, next) {
 async function update(req, res, next) {
   try {
     const { id } = req.params;
-    const { name, description, price, category, image, available } = req.body;
+    const { name, description, price, category, foodCategory, image, available } = req.body;
     const data = {};
     if (name) data.name = name;
     if (description !== undefined) data.description = description;
     if (price) data.price = parseFloat(price);
     if (category !== undefined) data.category = category;
+    if (foodCategory !== undefined) data.foodCategory = foodCategory;
     if (image !== undefined) data.image = image;
     if (available !== undefined) data.available = available;
 

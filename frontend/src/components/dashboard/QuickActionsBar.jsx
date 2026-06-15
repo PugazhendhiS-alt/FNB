@@ -7,10 +7,10 @@ import {
 } from '@heroicons/react/24/outline';
 
 const ACTIONS = [
-  { path: '/users', label: 'Add User', icon: UserPlusIcon, roles: ['SUPERADMIN', 'ADMIN'] },
-  { path: '/restaurants', label: 'Add Restaurant', icon: BuildingStorefrontIcon, roles: ['SUPERADMIN', 'ADMIN', 'BUILDING_MANAGER'] },
-  { path: '/buildings', label: 'Add Building', icon: BuildingOffice2Icon, roles: ['SUPERADMIN', 'ADMIN'] },
-  { path: '/menu', label: 'Add Menu Item', icon: PlusCircleIcon, roles: ['SUPERADMIN', 'ADMIN', 'RESTAURANT_MANAGER'] },
+  { path: '/users', label: 'Add User', icon: UserPlusIcon, roles: ['SUPERADMIN'] },
+  { path: '/restaurants', label: 'Add Restaurant', icon: BuildingStorefrontIcon, roles: ['SUPERADMIN', 'BUILDING_MANAGER'] },
+  { path: '/buildings', label: 'Add Building', icon: BuildingOffice2Icon, roles: ['SUPERADMIN'] },
+  { path: '/menu', label: 'Add Menu Item', icon: PlusCircleIcon, roles: ['SUPERADMIN', 'RESTAURANT_MANAGER'] },
 ];
 
 function QuickActionsBar() {

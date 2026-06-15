@@ -26,7 +26,7 @@ export default function Users() {
     phone: '', avatar: '', buildingId: '', restaurantId: '',
   });
   const [avatarPreview, setAvatarPreview] = useState('');
-  const { isAdmin, isSuperadmin, currentRole } = useRole();
+  const { isSuperadmin, currentRole } = useRole();
 
   useEffect(() => { Promise.all([fetchUsers(), fetchBuildings(), fetchRestaurants()]); }, []);
 
@@ -124,7 +124,7 @@ export default function Users() {
     isSuperadminUser ? true : ROLE_HIERARCHY[key] < currentUserLevel
   );
 
-  const requiresBuilding = (role) => ['ADMIN', 'BUILDING_MANAGER'].includes(role);
+  const requiresBuilding = (role) => ['BUILDING_MANAGER'].includes(role);
   const requiresRestaurant = (role) => ['RESTAURANT_MANAGER', 'CHEF'].includes(role);
 
   const columns = [
@@ -136,7 +136,7 @@ export default function Users() {
     { key: 'email', label: 'Email' },
     {
       key: 'role', label: 'Role',
-      render: (val) => <Badge variant={val === 'SUPERADMIN' ? 'purple' : val === 'ADMIN' ? 'info' : 'success'}>{ROLE_LABELS[val] || val}</Badge>,
+      render: (val) => <Badge variant={val === 'SUPERADMIN' ? 'purple' : 'success'}>{ROLE_LABELS[val] || val}</Badge>,
     },
     {
       key: 'buildingId', label: 'Building',
@@ -171,7 +171,7 @@ export default function Users() {
         title="Users"
         subtitle="Manage system users and roles"
         icon={UsersIcon}
-        actions={isAdmin && (
+        actions={isSuperadmin && (
           <Button onClick={openCreate}><PlusIcon className="w-4 h-4 mr-1" /> Add User</Button>
         )}
       />
