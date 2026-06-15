@@ -41,19 +41,23 @@ export default function TopBar({ onMenuClick }) {
             <span className="text-sm font-bold text-gray-900 dark:text-white hidden md:block">POS System</span>
           </div>
 
-          {user?.building && user?.restaurant && (
-            <div className="hidden lg:flex items-center gap-2 ml-4 pl-4 border-l border-gray-200 dark:border-gray-700">
+          <div className="hidden lg:flex items-center gap-2 ml-4 pl-4 border-l border-gray-200 dark:border-gray-700">
+            {user?.building && (
               <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                 <BuildingOffice2Icon className="w-3.5 h-3.5" />
                 <span className="font-medium text-gray-700 dark:text-gray-300">{user.building.name}</span>
               </div>
+            )}
+            {user?.building && user?.restaurant && (
               <span className="text-gray-300 dark:text-gray-600">/</span>
+            )}
+            {user?.restaurant && (
               <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                 <HomeModernIcon className="w-3.5 h-3.5" />
                 <span className="font-medium text-gray-700 dark:text-gray-300">{user.restaurant.name}</span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         <div className="flex-1" />
