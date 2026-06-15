@@ -1,19 +1,17 @@
-import { Menu, Transition, Listbox } from '@headlessui/react';
+import { Menu, Transition } from '@headlessui/react';
 import { Fragment, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useLocation } from '../../context/LocationContext';
 import { useSocket } from '../../context/SocketContext';
 import { ROLE_LABELS } from '../../lib/constants';
 import {
   BellIcon, ChevronDownIcon, ArrowRightOnRectangleIcon,
   UserCircleIcon, SunIcon, MoonIcon, Bars3Icon,
-  BuildingOffice2Icon, HomeModernIcon, CheckIcon,
+  BuildingOffice2Icon, HomeModernIcon,
 } from '@heroicons/react/24/outline';
 
 export default function TopBar({ onMenuClick }) {
   const { user, logout } = useAuth();
   const { notifications, setNotifications } = useSocket();
-  const { buildings, restaurants, selectedBuilding, selectedRestaurant, switchBuilding, switchRestaurant } = useLocation();
   const [showNotif, setShowNotif] = useState(false);
   const [dark, setDark] = useState(false);
 
@@ -27,8 +25,6 @@ export default function TopBar({ onMenuClick }) {
   const markAllRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
-
-  const showLocationSelectors = user?.role !== 'CUSTOMER';
 
   return (
     <header className="h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50">
@@ -44,66 +40,21 @@ export default function TopBar({ onMenuClick }) {
             </div>
             <span className="text-sm font-bold text-gray-900 dark:text-white hidden md:block">POS System</span>
           </div>
+
+          {user?.building && user?.restaurant && (
+            <div className="hidden lg:flex items-center gap-2 ml-4 pl-4 border-l border-gray-200 dark:border-gray-700">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <BuildingOffice2Icon className="w-3.5 h-3.5" />
+                <span className="font-medium text-gray-700 dark:text-gray-300">{user.building.name}</span>
+              </div>
+              <span className="text-gray-300 dark:text-gray-600">/</span>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                <HomeModernIcon className="w-3.5 h-3.5" />
+                <span className="font-medium text-gray-700 dark:text-gray-300">{user.restaurant.name}</span>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* Center: Building & Restaurant Selectors */}
-        {showLocationSelectors && (
-          <div className="hidden lg:flex items-center gap-3">
-            <div className="flex items-center gap-1.5">
-              <BuildingOffice2Icon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <Listbox value={selectedBuilding?.id || ''} onChange={switchBuilding}>
-                <div className="relative">
-                  <Listbox.Button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-xs font-medium text-gray-700 dark:text-gray-200 min-w-[140px]">
-                    <span className="truncate">{selectedBuilding?.name || 'Select Building'}</span>
-                    <ChevronDownIcon className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                  </Listbox.Button>
-                  <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                    <Listbox.Options className="absolute mt-1 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-60 overflow-auto py-1">
-                      {buildings.map(b => (
-                        <Listbox.Option key={b.id} value={b.id} className={({ active }) => `px-3 py-2 text-xs cursor-pointer ${active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300'}`}>
-                          {({ selected }) => (
-                            <div className="flex items-center justify-between">
-                              <span className="truncate">{b.name}</span>
-                              {selected && <CheckIcon className="w-3.5 h-3.5 text-primary-600 flex-shrink-0" />}
-                            </div>
-                          )}
-                        </Listbox.Option>
-                      ))}
-                    </Listbox.Options>
-                  </Transition>
-                </div>
-              </Listbox>
-            </div>
-
-            <span className="text-gray-300 dark:text-gray-600">/</span>
-
-            <div className="flex items-center gap-1.5">
-              <HomeModernIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
-              <Listbox value={selectedRestaurant?.id || ''} onChange={switchRestaurant}>
-                <div className="relative">
-                  <Listbox.Button className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-xs font-medium text-gray-700 dark:text-gray-200 min-w-[160px]">
-                    <span className="truncate">{selectedRestaurant?.name || 'Select Restaurant'}</span>
-                    <ChevronDownIcon className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                  </Listbox.Button>
-                  <Transition as={Fragment} leave="transition ease-in duration-100" leaveFrom="opacity-100" leaveTo="opacity-0">
-                    <Listbox.Options className="absolute mt-1 w-56 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50 max-h-60 overflow-auto py-1">
-                      {restaurants.map(r => (
-                        <Listbox.Option key={r.id} value={r.id} className={({ active }) => `px-3 py-2 text-xs cursor-pointer ${active ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300' : 'text-gray-700 dark:text-gray-300'}`}>
-                          {({ selected }) => (
-                            <div className="flex items-center justify-between">
-                              <span className="truncate">{r.name}</span>
-                              {selected && <CheckIcon className="w-3.5 h-3.5 text-primary-600 flex-shrink-0" />}
-                            </div>
-                          )}
-                        </Listbox.Option>
-                      ))}
-                    </Listbox.Options>
-                  </Transition>
-                </div>
-              </Listbox>
-            </div>
-          </div>
-        )}
 
         <div className="flex-1" />
 
