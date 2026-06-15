@@ -50,10 +50,18 @@ export default class ErrorBoundary extends Component {
                 Refresh Page
               </button>
             </div>
-            {process.env.NODE_ENV === 'development' && this.state.error && (
-              <pre className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs text-left overflow-auto max-h-32 text-red-600">
+            {this.state.error && (
+              <pre className="mt-4 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs text-left overflow-auto max-h-32 text-red-600 whitespace-pre-wrap break-all">
                 {this.state.error.toString()}
               </pre>
+            )}
+            {this.state.error?.stack && (
+              <details className="mt-2 text-left">
+                <summary className="text-xs text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300">Stack trace</summary>
+                <pre className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-lg text-xs text-left overflow-auto max-h-48 text-red-600 whitespace-pre-wrap break-all">
+                  {this.state.error.stack}
+                </pre>
+              </details>
             )}
           </div>
         </div>
