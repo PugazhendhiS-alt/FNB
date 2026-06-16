@@ -112,6 +112,25 @@ async function main() {
     }
   }
 
+  const modules = [
+    { key: 'dashboard', name: 'Dashboard', description: 'Analytics and overview widgets' },
+    { key: 'orders', name: 'Orders', description: 'Order management and tracking' },
+    { key: 'inventory', name: 'Inventory', description: 'Stock, vendors, purchase orders' },
+    { key: 'menu', name: 'Menu', description: 'Menu item management' },
+    { key: 'restaurants', name: 'Restaurants', description: 'Restaurant management' },
+    { key: 'buildings', name: 'Buildings', description: 'Building management' },
+    { key: 'users', name: 'Users', description: 'User management' },
+    { key: 'delivery', name: 'Delivery Confirmation', description: 'Order delivery confirmation' },
+  ];
+  for (const mod of modules) {
+    await prisma.module.upsert({
+      where: { key: mod.key },
+      update: { name: mod.name, description: mod.description },
+      create: { key: mod.key, name: mod.name, description: mod.description },
+    });
+  }
+  console.log('Default modules created');
+
   console.log('Seed completed successfully!');
   console.log('Superadmin created: username=Superadmin, password=Admin12345');
   console.log('Sample users created with passwords: manager123, chef123, customer123');
