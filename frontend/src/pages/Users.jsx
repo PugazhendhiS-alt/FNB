@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { authAPI, buildingAPI, restaurantAPI, moduleAPI } from '../api/endpoints';
-import { ROLES, ROLE_LABELS, ROLE_HIERARCHY } from '../lib/constants';
+import { ROLES, ROLE_LABELS, ROLE_HIERARCHY, ROLE_DEFAULT_MODULES } from '../lib/constants';
 import { useRole } from '../hooks/useRole';
 import { useAuth } from '../context/AuthContext';
 import Card from '../components/ui/Card';
@@ -34,6 +34,11 @@ export default function Users() {
   const { user: currentUser } = useAuth();
 
   const isManager = currentRole === 'BUILDING_MANAGER' || currentRole === 'RESTAURANT_MANAGER';
+
+  const getDefaultModuleIds = (role) => {
+    const defaultKeys = ROLE_DEFAULT_MODULES[role] || [];
+    return modules.filter(m => defaultKeys.includes(m.key)).map(m => m.id);
+  };
 
   useEffect(() => { Promise.all([fetchUsers(), fetchBuildings(), fetchRestaurants(), ...(isSuperadmin ? [fetchModules()] : [])]); }, []);
 
@@ -89,7 +94,7 @@ export default function Users() {
     }
     setForm(defaults);
     setAvatarPreview('');
-    setSelectedModules([]);
+    setSelectedModules(getDefaultModuleIds('CUSTOMER'));
     setModalOpen(true);
   };
 
@@ -276,7 +281,10 @@ export default function Users() {
             <select
               className="input-field"
               value={form.role}
-              onChange={(e) => setForm({ ...form, role: e.target.value, buildingId: '', restaurantId: '' })}
+              onChange={(e) => {
+                setForm({ ...form, role: e.target.value, buildingId: '', restaurantId: '' });
+                if (!editing) setSelectedModules(getDefaultModuleIds(e.target.value));
+              }}
             >
               {assignableRoles.map(([key, label]) => (
                 <option key={key} value={key}>{label}</option>

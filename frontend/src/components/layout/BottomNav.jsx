@@ -21,8 +21,8 @@ export default function BottomNav() {
   const { allowedModules } = useAuth();
   const location = useLocation();
 
-  const moduleNames = allowedModules && Array.isArray(allowedModules)
-    ? allowedModules.map(m => m.name.toLowerCase())
+  const moduleKeys = allowedModules && Array.isArray(allowedModules)
+    ? allowedModules.map(m => m.key)
     : null;
 
   let visibleTabs = tabs.filter(t => {
@@ -32,10 +32,10 @@ export default function BottomNav() {
     return true;
   });
 
-  if (moduleNames && !isSuperadmin) {
+  if (moduleKeys && !isSuperadmin) {
     visibleTabs = visibleTabs.filter(t => {
-      for (const [modName, paths] of Object.entries(MODULE_PATH_MAP)) {
-        if (paths.includes(t.path)) return moduleNames.includes(modName);
+      for (const [modKey, paths] of Object.entries(MODULE_PATH_MAP)) {
+        if (paths.includes(t.path)) return moduleKeys.includes(modKey);
       }
       return true;
     });

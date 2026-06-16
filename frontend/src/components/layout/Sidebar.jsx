@@ -18,14 +18,14 @@ export default function Sidebar({ open, onClose }) {
   const { allowedModules } = useAuth();
   const links = SIDEBAR_LINKS[currentRole] || SIDEBAR_LINKS.CUSTOMER;
 
-  const moduleNames = allowedModules && Array.isArray(allowedModules)
-    ? allowedModules.map(m => m.name.toLowerCase())
+  const moduleKeys = allowedModules && Array.isArray(allowedModules)
+    ? allowedModules.map(m => m.key)
     : null;
 
-  const filteredLinks = moduleNames && !isSuperadmin
+  const filteredLinks = moduleKeys && !isSuperadmin
     ? links.filter(link => {
-        for (const [modName, paths] of Object.entries(MODULE_PATH_MAP)) {
-          if (paths.includes(link.path)) return moduleNames.includes(modName);
+        for (const [modKey, paths] of Object.entries(MODULE_PATH_MAP)) {
+          if (paths.includes(link.path)) return moduleKeys.includes(modKey);
         }
         return true;
       })

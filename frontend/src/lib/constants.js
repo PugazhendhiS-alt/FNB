@@ -93,6 +93,14 @@ export const SYSTEM_WIDGETS = [
   { widgetType: 'food_card_overview', label: 'Food Card', displayType: 'food_card', roles: ['CUSTOMER','SUPERADMIN','BUILDING_MANAGER','RESTAURANT_MANAGER'] },
 ];
 
+export const ROLE_DEFAULT_MODULES = {
+  SUPERADMIN: ['dashboard', 'orders', 'inventory', 'menu', 'restaurants', 'buildings', 'users', 'delivery', 'modules'],
+  BUILDING_MANAGER: ['dashboard', 'inventory', 'restaurants', 'users'],
+  RESTAURANT_MANAGER: ['dashboard', 'orders', 'inventory', 'menu', 'users', 'delivery'],
+  CHEF: ['dashboard', 'orders', 'inventory'],
+  CUSTOMER: ['dashboard', 'restaurants', 'orders'],
+};
+
 export const MODULE_PATH_MAP = {
   dashboard: ['/'],
   orders: ['/orders'],

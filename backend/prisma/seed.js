@@ -121,6 +121,7 @@ async function main() {
     { key: 'buildings', name: 'Buildings', description: 'Building management' },
     { key: 'users', name: 'Users', description: 'User management' },
     { key: 'delivery', name: 'Delivery Confirmation', description: 'Order delivery confirmation' },
+    { key: 'modules', name: 'Modules', description: 'Module access management' },
   ];
   for (const mod of modules) {
     await prisma.module.upsert({
