@@ -5,6 +5,7 @@ export default function QRScanner({ onScan, onClose }) {
   const [scanning, setScanning] = useState(false);
   const containerRef = useRef(null);
   const scannerRef = useRef(null);
+  const runningRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -28,12 +29,14 @@ export default function QRScanner({ onScan, onClose }) {
               const data = JSON.parse(decodedText);
               const code = data.orderCode || data.code || '';
               if (code.length === 6) {
+                runningRef.current = false;
                 scanner.stop().catch(() => {});
                 if (!cancelled) onScan(code);
                 return;
               }
             } catch {}
             if (/^[A-Z0-9]{6}$/.test(decodedText.trim())) {
+              runningRef.current = false;
               scanner.stop().catch(() => {});
               if (!cancelled) onScan(decodedText.trim());
             }
@@ -41,7 +44,10 @@ export default function QRScanner({ onScan, onClose }) {
           () => {}
         );
 
-        if (!cancelled) setScanning(true);
+        if (!cancelled) {
+          runningRef.current = true;
+          setScanning(true);
+        }
       } catch (err) {
         if (!cancelled) setError('Camera access denied or not supported');
       }
@@ -51,7 +57,8 @@ export default function QRScanner({ onScan, onClose }) {
 
     return () => {
       cancelled = true;
-      if (scannerRef.current) {
+      if (scannerRef.current && runningRef.current) {
+        runningRef.current = false;
         scannerRef.current.stop().catch(() => {});
       }
     };
@@ -82,12 +89,7 @@ export default function QRScanner({ onScan, onClose }) {
               </div>
               <p className="text-sm text-red-600 dark:text-red-400 font-medium">Camera Error</p>
               <p className="text-xs text-gray-500">{error}</p>
-              <button
-                onClick={onClose}
-                className="btn-secondary text-sm mt-2"
-              >
-                Close
-              </button>
+              <button onClick={onClose} className="btn-secondary text-sm mt-2">Close</button>
             </div>
           ) : (
             <>
