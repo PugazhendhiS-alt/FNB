@@ -26,6 +26,7 @@ model User {
   widgets         UserWidget[]
   otps            Otp[]
   foodCard        FoodCard?
+  moduleOverrides UserModule[]
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
@@ -43,9 +44,10 @@ model Building {
   description String?
   image       String?
   isActive    Boolean     @default(true)
-  restaurants Restaurant[]
-  users       User[]      @relation("BuildingUsers")
-  createdAt   DateTime    @default(now())
+  restaurants     Restaurant[]
+  users           User[]           @relation("BuildingUsers")
+  moduleOverrides BuildingModule[]
+  createdAt       DateTime         @default(now())
   updatedAt   DateTime    @updatedAt
 
   @@index([isActive])
@@ -72,6 +74,7 @@ model Restaurant {
   stockAdjustments  StockAdjustment[]
   physicalStockCounts PhysicalStockCount[]
   wastageEntries    WastageEntry[]
+  moduleOverrides   RestaurantModule[]
   createdAt         DateTime            @default(now())
   updatedAt         DateTime            @updatedAt
 
@@ -581,4 +584,64 @@ model InventoryMovement {
   @@index([referenceId])
   @@index([restaurantId])
   @@index([createdAt])
+}
+
+// ─── Module Management ────────────────────────────────────────────────────────
+
+model Module {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  buildingOverrides BuildingModule[]
+  restaurantOverrides RestaurantModule[]
+  userOverrides      UserModule[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BuildingModule {
+  id         String   @id @default(uuid())
+  buildingId String
+  building   Building @relation(fields: [buildingId], references: [id])
+  moduleId   String
+  module     Module   @relation(fields: [moduleId], references: [id])
+  isEnabled  Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([buildingId, moduleId])
+  @@index([buildingId])
+  @@index([moduleId])
+}
+
+model RestaurantModule {
+  id           String     @id @default(uuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  moduleId     String
+  module       Module     @relation(fields: [moduleId], references: [id])
+  isEnabled    Boolean    @default(true)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([restaurantId, moduleId])
+  @@index([restaurantId])
+  @@index([moduleId])
+}
+
+model UserModule {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  moduleId  String
+  module    Module   @relation(fields: [moduleId], references: [id])
+  isEnabled Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@index([moduleId])
 }

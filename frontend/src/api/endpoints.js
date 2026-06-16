@@ -122,3 +122,14 @@ export const inventoryAPI = {
   deleteRecipe: (id) => client.delete(`/inventory/recipes/${id}`),
   getMovements: (params) => client.get('/inventory/movements', { params }),
 };
+
+export const moduleAPI = {
+  getAll: () => client.get('/modules'),
+  getOverrides: () => client.get('/modules/overrides'),
+  upsertBuilding: (data) => client.post('/modules/building', data),
+  upsertRestaurant: (data) => client.post('/modules/restaurant', data),
+  upsertUser: (data) => client.post('/modules/user', data),
+  deleteBuilding: (id) => client.delete(`/modules/building/${id}`),
+  deleteRestaurant: (id) => client.delete(`/modules/restaurant/${id}`),
+  deleteUser: (id) => client.delete(`/modules/user/${id}`),
+};

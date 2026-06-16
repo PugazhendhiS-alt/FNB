@@ -103,6 +103,7 @@ export const SIDEBAR_LINKS = {
     { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
     { path: '/menu', label: 'Menu Items', icon: 'RectangleStackIcon' },
     { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },
+    { path: '/modules', label: 'Modules', icon: 'PuzzlePieceIcon' },
   ],
   BUILDING_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
