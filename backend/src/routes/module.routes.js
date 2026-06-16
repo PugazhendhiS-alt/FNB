@@ -4,6 +4,7 @@ const { authorize, roles } = require('../middleware/roles');
 const ctrl = require('../controllers/module.controller');
 
 router.get('/', authenticate, authorize(roles.SUPERADMIN), ctrl.getAllModules);
+router.get('/my-access', authenticate, ctrl.getMyAccess);
 router.get('/overrides', authenticate, authorize(roles.SUPERADMIN), ctrl.getModuleOverrides);
 router.post('/building', authenticate, authorize(roles.SUPERADMIN), ctrl.upsertBuildingModule);
 router.post('/restaurant', authenticate, authorize(roles.SUPERADMIN), ctrl.upsertRestaurantModule);

@@ -1,6 +1,7 @@
 ﻿import { NavLink } from 'react-router-dom';
 import { useRole } from '../../hooks/useRole';
-import { SIDEBAR_LINKS } from '../../lib/constants';
+import { useAuth } from '../../context/AuthContext';
+import { SIDEBAR_LINKS, MODULE_PATH_MAP } from '../../lib/constants';
 import {
   ChartBarIcon, BuildingOffice2Icon, HomeModernIcon, RectangleStackIcon,
   ShoppingBagIcon, TruckIcon, UsersIcon, CubeIcon, PuzzlePieceIcon,
@@ -13,8 +14,22 @@ const iconMap = {
 };
 
 export default function Sidebar({ open, onClose }) {
-  const { currentRole } = useRole();
+  const { currentRole, isSuperadmin } = useRole();
+  const { allowedModules } = useAuth();
   const links = SIDEBAR_LINKS[currentRole] || SIDEBAR_LINKS.CUSTOMER;
+
+  const moduleNames = allowedModules && Array.isArray(allowedModules)
+    ? allowedModules.map(m => m.name.toLowerCase())
+    : null;
+
+  const filteredLinks = moduleNames && !isSuperadmin
+    ? links.filter(link => {
+        for (const [modName, paths] of Object.entries(MODULE_PATH_MAP)) {
+          if (paths.includes(link.path)) return moduleNames.includes(modName);
+        }
+        return true;
+      })
+    : links;
 
   return (
     <>
@@ -25,7 +40,7 @@ export default function Sidebar({ open, onClose }) {
         open ? 'translate-x-0' : '-translate-x-full'
       }`}>
         <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-          {links.map((link) => {
+          {filteredLinks.map((link) => {
             const Icon = iconMap[link.icon];
             return (
               <NavLink

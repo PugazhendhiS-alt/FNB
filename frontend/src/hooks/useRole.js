@@ -19,12 +19,13 @@ export function useRole() {
   const canDeleteRestaurant = isSuperadmin;
   const canManageMenu = isRestaurantManager || isSuperadmin;
   const canManageOrders = isRestaurantManager || isChef || isSuperadmin;
+  const canManageUsers = isSuperadmin || effectiveRole === 'BUILDING_MANAGER' || effectiveRole === 'RESTAURANT_MANAGER';
   const canViewDashboard = true;
   const canPlaceOrders = isCustomer;
 
   return {
     isSuperadmin, isBuildingManager, isRestaurantManager, isChef, isCustomer,
     currentRole, canManageBuildings, canEditBuilding, canManageRestaurants, canDeleteRestaurant, canManageMenu,
-    canManageOrders, canViewDashboard, canPlaceOrders,
+    canManageOrders, canManageUsers, canViewDashboard, canPlaceOrders,
   };
 }

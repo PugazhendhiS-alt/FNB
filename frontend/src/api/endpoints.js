@@ -125,6 +125,7 @@ export const inventoryAPI = {
 
 export const moduleAPI = {
   getAll: () => client.get('/modules'),
+  getMyAccess: () => client.get('/modules/my-access'),
   getOverrides: () => client.get('/modules/overrides'),
   upsertBuilding: (data) => client.post('/modules/building', data),
   upsertRestaurant: (data) => client.post('/modules/restaurant', data),

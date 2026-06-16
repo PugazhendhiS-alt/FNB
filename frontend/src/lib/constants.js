@@ -93,6 +93,18 @@ export const SYSTEM_WIDGETS = [
   { widgetType: 'food_card_overview', label: 'Food Card', displayType: 'food_card', roles: ['CUSTOMER','SUPERADMIN','BUILDING_MANAGER','RESTAURANT_MANAGER'] },
 ];
 
+export const MODULE_PATH_MAP = {
+  dashboard: ['/'],
+  orders: ['/orders'],
+  inventory: ['/inventory'],
+  menu: ['/menu'],
+  restaurants: ['/restaurants'],
+  buildings: ['/buildings'],
+  users: ['/users'],
+  delivery: ['/delivery-confirmation'],
+  modules: ['/modules'],
+};
+
 export const SIDEBAR_LINKS = {
   SUPERADMIN: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
@@ -107,12 +119,14 @@ export const SIDEBAR_LINKS = {
   ],
   BUILDING_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    { path: '/users', label: 'Users', icon: 'UsersIcon' },
     { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
   ],
   RESTAURANT_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
     { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
+    { path: '/users', label: 'Users', icon: 'UsersIcon' },
     { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/menu', label: 'Menu', icon: 'RectangleStackIcon' },
     { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },

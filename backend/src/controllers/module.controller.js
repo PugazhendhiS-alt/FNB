@@ -89,6 +89,48 @@ async function deleteRestaurantModule(req, res, next) {
   }
 }
 
+async function getMyAccess(req, res, next) {
+  try {
+    const allModules = await prisma.module.findMany({ orderBy: { name: 'asc' } });
+    if (req.user.isSuperadmin) {
+      return res.json(allModules);
+    }
+
+    const userOverrides = await prisma.userModule.findMany({
+      where: { userId: req.user.id },
+    });
+    const userOverrideMap = {};
+    for (const ov of userOverrides) userOverrideMap[ov.moduleId] = ov.isEnabled;
+
+    let restaurantOverrideMap = {};
+    if (req.user.restaurantId) {
+      const restaurantOverrides = await prisma.restaurantModule.findMany({
+        where: { restaurantId: req.user.restaurantId },
+      });
+      for (const ov of restaurantOverrides) restaurantOverrideMap[ov.moduleId] = ov.isEnabled;
+    }
+
+    let buildingOverrideMap = {};
+    if (req.user.buildingId) {
+      const buildingOverrides = await prisma.buildingModule.findMany({
+        where: { buildingId: req.user.buildingId },
+      });
+      for (const ov of buildingOverrides) buildingOverrideMap[ov.moduleId] = ov.isEnabled;
+    }
+
+    const result = allModules.filter(mod => {
+      if (mod.id in userOverrideMap) return userOverrideMap[mod.id];
+      if (mod.id in restaurantOverrideMap) return restaurantOverrideMap[mod.id];
+      if (mod.id in buildingOverrideMap) return buildingOverrideMap[mod.id];
+      return true;
+    });
+
+    res.json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 async function deleteUserModule(req, res, next) {
   try {
     await prisma.userModule.delete({ where: { id: req.params.id } });
@@ -101,6 +143,7 @@ async function deleteUserModule(req, res, next) {
 module.exports = {
   getAllModules,
   getModuleOverrides,
+  getMyAccess,
   upsertBuildingModule,
   upsertRestaurantModule,
   upsertUserModule,

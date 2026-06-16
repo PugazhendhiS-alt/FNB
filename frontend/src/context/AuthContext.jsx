@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { authAPI } from '../api/endpoints';
+import { authAPI, moduleAPI } from '../api/endpoints';
 import { withTimeout } from '../api/client';
 
 const AuthContext = createContext(null);
@@ -30,6 +30,17 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(safeGetItem('token'));
   const [loading, setLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(safeGetItem('isGuest') === 'true');
+  const [allowedModules, setAllowedModules] = useState(null);
+
+  const loadAllowedModules = async () => {
+    try {
+      const res = await moduleAPI.getMyAccess();
+      setAllowedModules(res.data);
+      try { localStorage.setItem('allowedModules', JSON.stringify(res.data)); } catch {}
+    } catch {
+      setAllowedModules([]);
+    }
+  };
 
   useEffect(() => {
     if (token) {
@@ -42,12 +53,15 @@ export function AuthProvider({ children }) {
           safeRemoveItem('token');
           safeRemoveItem('user');
           safeRemoveItem('isGuest');
+          safeRemoveItem('allowedModules');
           setToken(null);
           setUser(null);
           setIsGuest(false);
         })
-        .finally(() => setLoading(false));
+        .finally(() => { if (!loading) setLoading(false); });
+      loadAllowedModules().finally(() => setLoading(false));
     } else {
+      setAllowedModules(null);
       setLoading(false);
     }
   }, [token]);
@@ -62,6 +76,7 @@ export function AuthProvider({ children }) {
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(false);
+    loadAllowedModules();
     return res.data;
   };
 
@@ -81,6 +96,7 @@ export function AuthProvider({ children }) {
     setToken(res.data.token);
     setUser(res.data.user);
     setIsGuest(false);
+    loadAllowedModules();
     return res.data;
   };
 
@@ -93,7 +109,8 @@ export function AuthProvider({ children }) {
     } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
-    setIsGuest(true);
+    setIsGuest(false);
+    loadAllowedModules();
     return res.data;
   };
 
@@ -114,9 +131,11 @@ export function AuthProvider({ children }) {
     safeRemoveItem('token');
     safeRemoveItem('user');
     safeRemoveItem('isGuest');
+    safeRemoveItem('allowedModules');
     setToken(null);
     setUser(null);
     setIsGuest(false);
+    setAllowedModules(null);
   };
 
   const switchRole = async (role) => {
@@ -126,11 +145,12 @@ export function AuthProvider({ children }) {
     } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
+    loadAllowedModules();
     return res.data;
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isGuest, login, sendOtp, verifyOtp, guestLogin, register, logout, switchRole }}>
+    <AuthContext.Provider value={{ user, token, loading, isGuest, allowedModules, login, sendOtp, verifyOtp, guestLogin, register, logout, switchRole }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,6 +1,7 @@
 ﻿const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { generateToken } = require('../utils/jwt');
+const { roles, roleHierarchy } = require('../middleware/roles');
 
 const prisma = new PrismaClient();
 
@@ -99,9 +100,16 @@ async function getAllUsers(req, res, next) {
   try {
     const where = {};
     if (req.query.role) where.role = req.query.role;
+
+    if (req.user.role === roles.BUILDING_MANAGER) {
+      where.buildingId = req.user.buildingId;
+    } else if (req.user.role === roles.RESTAURANT_MANAGER) {
+      where.restaurantId = req.user.restaurantId;
+    }
+
     const users = await prisma.user.findMany({
       where,
-      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, avatar: true, buildingId: true, restaurantId: true, phone: true, createdAt: true },
+      include: { building: { select: { id: true, name: true } }, restaurant: { select: { id: true, name: true } } },
       orderBy: { createdAt: 'desc' },
       take: 200,
     });
@@ -114,10 +122,31 @@ async function getAllUsers(req, res, next) {
 async function createUser(req, res, next) {
   try {
     const { username, email, password, role, phone, avatar, buildingId, restaurantId } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const requestorLevel = roleHierarchy[req.user.role] || 0;
+    const targetLevel = roleHierarchy[role] || 0;
+    if (requestorLevel <= targetLevel) {
+      return res.status(403).json({ message: 'You cannot create a user with equal or higher role.' });
+    }
+    if (role === 'SUPERADMIN') {
+      return res.status(403).json({ message: 'Only existing superadmins can create superadmins.' });
+    }
+
+    const data = { username, email, password: await bcrypt.hash(password, 10), role, phone, avatar };
+
+    if (req.user.role === roles.BUILDING_MANAGER) {
+      data.buildingId = req.user.buildingId;
+    } else if (req.user.role === roles.RESTAURANT_MANAGER) {
+      data.restaurantId = req.user.restaurantId;
+      if (buildingId) data.buildingId = buildingId;
+    } else {
+      if (buildingId) data.buildingId = buildingId;
+      if (restaurantId) data.restaurantId = restaurantId;
+    }
+
     const user = await prisma.user.create({
-      data: { username, email, password: hashedPassword, role, phone, avatar, buildingId, restaurantId },
-      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, avatar: true, buildingId: true, restaurantId: true, createdAt: true },
+      data,
+      include: { building: { select: { id: true, name: true } }, restaurant: { select: { id: true, name: true } } },
     });
     res.status(201).json(user);
   } catch (err) {
@@ -129,6 +158,25 @@ async function updateUser(req, res, next) {
   try {
     const { id } = req.params;
     const { username, email, password, role, phone, avatar, buildingId, restaurantId } = req.body;
+
+    const target = await prisma.user.findUnique({ where: { id }, select: { id: true, role: true } });
+    if (!target) return res.status(404).json({ message: 'User not found.' });
+
+    const requestorLevel = roleHierarchy[req.user.role] || 0;
+    const targetLevel = roleHierarchy[target.role] || 0;
+    if (requestorLevel <= targetLevel && req.user.id !== id) {
+      return res.status(403).json({ message: 'You cannot update a user with equal or higher role.' });
+    }
+    if (role && role === 'SUPERADMIN') {
+      return res.status(403).json({ message: 'Cannot assign superadmin role.' });
+    }
+    if (role) {
+      const newRoleLevel = roleHierarchy[role] || 0;
+      if (requestorLevel <= newRoleLevel) {
+        return res.status(403).json({ message: 'Cannot assign equal or higher role.' });
+      }
+    }
+
     const data = {};
     if (username) data.username = username;
     if (email) data.email = email;
@@ -136,13 +184,26 @@ async function updateUser(req, res, next) {
     if (role) data.role = role;
     if (phone !== undefined) data.phone = phone;
     if (avatar !== undefined) data.avatar = avatar;
-    if (buildingId !== undefined) data.buildingId = buildingId;
-    if (restaurantId !== undefined) data.restaurantId = restaurantId;
+
+    if (req.user.role === roles.BUILDING_MANAGER) {
+      if (buildingId !== undefined && buildingId !== req.user.buildingId) {
+        return res.status(403).json({ message: 'You cannot assign a different building.' });
+      }
+      data.buildingId = req.user.buildingId;
+    } else if (req.user.role === roles.RESTAURANT_MANAGER) {
+      if (restaurantId !== undefined && restaurantId !== req.user.restaurantId) {
+        return res.status(403).json({ message: 'You cannot assign a different restaurant.' });
+      }
+      data.restaurantId = req.user.restaurantId;
+    } else {
+      if (buildingId !== undefined) data.buildingId = buildingId;
+      if (restaurantId !== undefined) data.restaurantId = restaurantId;
+    }
 
     const user = await prisma.user.update({
       where: { id },
       data,
-      select: { id: true, username: true, email: true, role: true, isSuperadmin: true, avatar: true, buildingId: true, restaurantId: true, createdAt: true },
+      include: { building: { select: { id: true, name: true } }, restaurant: { select: { id: true, name: true } } },
     });
     res.json(user);
   } catch (err) {
@@ -156,6 +217,16 @@ async function deleteUser(req, res, next) {
     if (id === req.user.id) {
       return res.status(400).json({ message: 'Cannot delete yourself.' });
     }
+
+    const target = await prisma.user.findUnique({ where: { id }, select: { id: true, role: true } });
+    if (!target) return res.status(404).json({ message: 'User not found.' });
+
+    const requestorLevel = roleHierarchy[req.user.role] || 0;
+    const targetLevel = roleHierarchy[target.role] || 0;
+    if (requestorLevel <= targetLevel) {
+      return res.status(403).json({ message: 'You cannot delete a user with equal or higher role.' });
+    }
+
     await prisma.user.delete({ where: { id } });
     res.json({ message: 'User deleted successfully.' });
   } catch (err) {

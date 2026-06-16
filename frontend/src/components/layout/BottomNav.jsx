@@ -1,5 +1,7 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useRole } from '../../hooks/useRole';
+import { useAuth } from '../../context/AuthContext';
+import { MODULE_PATH_MAP } from '../../lib/constants';
 import {
   ChartBarIcon, ShoppingBagIcon, BuildingStorefrontIcon,
   UsersIcon, RectangleStackIcon, CubeIcon,
@@ -15,15 +17,29 @@ const tabs = [
 ];
 
 export default function BottomNav() {
-  const { isCustomer } = useRole();
+  const { isCustomer, isSuperadmin } = useRole();
+  const { allowedModules } = useAuth();
   const location = useLocation();
 
-  const visibleTabs = tabs.filter(t => {
+  const moduleNames = allowedModules && Array.isArray(allowedModules)
+    ? allowedModules.map(m => m.name.toLowerCase())
+    : null;
+
+  let visibleTabs = tabs.filter(t => {
     if (t.path === '/users' && isCustomer) return false;
     if (t.path === '/inventory' && isCustomer) return false;
     if (t.path === '/menu' && isCustomer) return false;
     return true;
   });
+
+  if (moduleNames && !isSuperadmin) {
+    visibleTabs = visibleTabs.filter(t => {
+      for (const [modName, paths] of Object.entries(MODULE_PATH_MAP)) {
+        if (paths.includes(t.path)) return moduleNames.includes(modName);
+      }
+      return true;
+    });
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-gray-800/95 backdrop-blur-lg border-t border-gray-200/80 dark:border-gray-700/80 lg:hidden safe-area-bottom shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.2)]">
