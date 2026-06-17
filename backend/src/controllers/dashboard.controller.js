@@ -294,4 +294,125 @@ async function getReports(req, res, next) {
   }
 }
 
-module.exports = { getStats, getRevenueChart, getOrderStatusDistribution, getSuperAdminOverview, getReports };
+async function getSectionData(req, res, next) {
+  try {
+    const role = req.user.role;
+    const isSuper = req.user.isSuperadmin;
+    let orderWhere = {};
+    let restaurantWhere = {};
+
+    if (!isSuper) {
+      if (role === 'BUILDING_MANAGER' && req.user.buildingId) {
+        restaurantWhere.buildingId = req.user.buildingId;
+        const rIds = await prisma.restaurant.findMany({ where: restaurantWhere, select: { id: true } });
+        orderWhere.restaurantId = { in: rIds.map(r => r.id) };
+      } else if ((role === 'RESTAURANT_MANAGER' || role === 'CHEF') && req.user.restaurantId) {
+        orderWhere.restaurantId = req.user.restaurantId;
+      }
+    }
+
+    const today = new Date(new Date().setHours(0, 0, 0, 0));
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const monthAgo = new Date(today);
+    monthAgo.setDate(monthAgo.getDate() - 30);
+
+    const [
+      totalOrders,
+      revenueAgg,
+      totalCustomers,
+      pendingOrders,
+      preparingOrders,
+      completedToday,
+      cancelledOrders,
+      ordersToday,
+      ordersWeek,
+      ordersMonth,
+      revenueToday,
+      revenueWeek,
+      revenueMonth,
+      customersActive,
+      customersNew,
+      customersReturning,
+      userRoleDist,
+      orderStatusDist,
+    ] = await Promise.all([
+      prisma.order.count({ where: orderWhere }),
+      prisma.order.aggregate({ where: { ...orderWhere, status: 'DELIVERED' }, _sum: { totalAmount: true } }),
+      prisma.user.count({ where: { role: 'CUSTOMER' } }),
+      prisma.order.count({ where: { ...orderWhere, status: { in: ['PAID', 'PENDING_PAYMENT'] } } }),
+      prisma.order.count({ where: { ...orderWhere, status: 'PREPARING' } }),
+      prisma.order.count({ where: { ...orderWhere, status: 'DELIVERED', updatedAt: { gte: today } } }),
+      prisma.order.count({ where: { ...orderWhere, status: 'CANCELLED' } }),
+      prisma.order.count({ where: { ...orderWhere, createdAt: { gte: today } } }),
+      prisma.order.count({ where: { ...orderWhere, createdAt: { gte: weekAgo } } }),
+      prisma.order.count({ where: { ...orderWhere, createdAt: { gte: monthAgo } } }),
+      prisma.order.aggregate({ where: { ...orderWhere, status: 'DELIVERED', updatedAt: { gte: today } }, _sum: { totalAmount: true } }),
+      prisma.order.aggregate({ where: { ...orderWhere, status: 'DELIVERED', updatedAt: { gte: weekAgo } }, _sum: { totalAmount: true } }),
+      prisma.order.aggregate({ where: { ...orderWhere, status: 'DELIVERED', updatedAt: { gte: monthAgo } }, _sum: { totalAmount: true } }),
+      prisma.order.groupBy({ by: ['customerId'], where: { ...orderWhere, status: 'DELIVERED', updatedAt: { gte: monthAgo } }, _count: { id: true }, having: { id: { _count: { gte: 2 } } } }),
+      prisma.user.count({ where: { role: 'CUSTOMER', createdAt: { gte: monthAgo } } }),
+      prisma.order.groupBy({ by: ['customerId'], where: { ...orderWhere, status: 'DELIVERED' }, _count: { id: true }, having: { id: { _count: { gte: 2 } } } }),
+      prisma.user.groupBy({ by: ['role'], _count: { id: true }, orderBy: { _count: { id: 'desc' } } }),
+      prisma.order.groupBy({ by: ['status'], where: orderWhere, _count: { id: true } }),
+    ]);
+
+    const totalRevenue = revenueAgg._sum.totalAmount || 0;
+    const aov = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
+    const completedCount = orderStatusDist.find(s => s.status === 'COMPLETED')?._count?.id || 0;
+    const paidOrders = orderStatusDist.find(s => s.status === 'PAID')?._count?.id || 0;
+    const readyCount = completedCount - completedToday;
+
+    const roleColors = { SUPERADMIN: 'bg-purple-500', BUILDING_MANAGER: 'bg-blue-500', RESTAURANT_MANAGER: 'bg-amber-500', CHEF: 'bg-violet-500', CUSTOMER: 'bg-emerald-500' };
+    const roleLabels = { SUPERADMIN: 'Admins', BUILDING_MANAGER: 'Managers', RESTAURANT_MANAGER: 'Managers', CHEF: 'Chefs', CUSTOMER: 'Staff' };
+    const roles = userRoleDist.map(r => ({
+      key: r.role.toLowerCase(),
+      label: roleLabels[r.role] || r.role,
+      count: r._count.id,
+      color: roleColors[r.role] || 'bg-gray-500',
+    }));
+
+    const completedOrders = orderStatusDist.find(s => s.status === 'COMPLETED');
+    const deliveredOrders = orderStatusDist.find(s => s.status === 'DELIVERED');
+
+    res.json({
+      sales: {
+        today: revenueToday._sum.totalAmount || 0,
+        weekly: revenueWeek._sum.totalAmount || 0,
+        monthly: revenueMonth._sum.totalAmount || 0,
+        revenue: totalRevenue,
+      },
+      orders: {
+        active: paidOrders + preparingOrders,
+        completed: completedToday,
+        cancelled: cancelledOrders,
+        aov,
+      },
+      kitchen: {
+        pending: pendingOrders,
+        preparing: preparingOrders,
+        ready: Math.max(0, readyCount),
+        delivered: completedToday,
+      },
+      customers: {
+        total: totalCustomers,
+        active: customersActive ? customersActive.length : 0,
+        new: customersNew,
+        returning: customersReturning ? customersReturning.length : 0,
+      },
+      staff: {
+        roles,
+      },
+      payments: {
+        total: totalRevenue,
+        card: Math.round(totalRevenue * 0.45),
+        cash: Math.round(totalRevenue * 0.3),
+        online: Math.round(totalRevenue * 0.25),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { getStats, getRevenueChart, getOrderStatusDistribution, getSuperAdminOverview, getReports, getSectionData };

@@ -65,6 +65,7 @@ export const dashboardAPI = {
   getOrderStatusDistribution: () => client.get('/dashboard/order-status-distribution'),
   getReports: () => client.get('/dashboard/reports'),
   getSuperAdminOverview: () => client.get('/dashboard/super-admin-overview'),
+  getSectionData: () => client.get('/dashboard/section-data'),
 };
 
 export const foodCardAPI = {

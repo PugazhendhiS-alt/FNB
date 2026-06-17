@@ -8,7 +8,7 @@ import QuickActionsBar from '../components/dashboard/QuickActionsBar';
 import DashboardContent from '../components/dashboard/DashboardWidgetSections';
 import DashboardFilters, { FilterToggleButton } from '../components/dashboard/DashboardFilters';
 import ErrorBoundary from '../components/ErrorBoundary';
-import { widgetAPI } from '../api/endpoints';
+import { widgetAPI, dashboardAPI } from '../api/endpoints';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
 
 const WIDGET_TYPE_TO_KPI = {
@@ -22,9 +22,11 @@ const WIDGET_TYPE_TO_KPI = {
 
 export default function Dashboard() {
   const [metrics, setMetrics] = useState([]);
+  const [sectionData, setSectionData] = useState({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [dateRange, setDateRange] = useState('7d');
   const [kpiLoading, setKpiLoading] = useState(true);
+  const [sectionLoading, setSectionLoading] = useState(true);
   const { isSuperadmin, currentRole, isCustomer } = useRole();
   const navigate = useNavigate();
 
@@ -63,7 +65,25 @@ export default function Dashboard() {
       }
     }
 
+    async function loadSectionData() {
+      try {
+        const res = await dashboardAPI.getSectionData();
+        if (!cancelled && res.data) {
+          const flat = {};
+          Object.values(res.data).forEach(group => {
+            if (group && typeof group === 'object') Object.assign(flat, group);
+          });
+          setSectionData(flat);
+        }
+      } catch {
+        // silent - use defaults
+      } finally {
+        if (!cancelled) setSectionLoading(false);
+      }
+    }
+
     loadMetrics();
+    loadSectionData();
     return () => { cancelled = true; };
   }, []);
 
@@ -88,7 +108,7 @@ export default function Dashboard() {
             <span className="hidden sm:inline">View Menus</span>
           </button>
         </div>
-        <DashboardContent />
+        <DashboardContent data={sectionData} />
       </div>
     );
   }
@@ -117,7 +137,7 @@ export default function Dashboard() {
       <KPIGrid metrics={metrics} loading={kpiLoading} />
 
       <ErrorBoundary message="A dashboard section failed to load.">
-        <DashboardContent />
+        <DashboardContent data={sectionData} />
       </ErrorBoundary>
     </div>
   );

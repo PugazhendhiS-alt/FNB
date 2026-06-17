@@ -7,6 +7,7 @@ router.get('/stats', authenticate, ctrl.getStats);
 router.get('/revenue-chart', authenticate, ctrl.getRevenueChart);
 router.get('/order-status-distribution', authenticate, ctrl.getOrderStatusDistribution);
 router.get('/super-admin-overview', authenticate, ctrl.getSuperAdminOverview);
+router.get('/section-data', authenticate, ctrl.getSectionData);
 router.get('/reports', authenticate, ctrl.getReports);
 
 router.get('/widgets', authenticate, widget.getWidgets);
