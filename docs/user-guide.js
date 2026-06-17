@@ -149,10 +149,11 @@ const tocEntries = [
   'Executive Summary','System Architecture','User Journey Maps',
   '1.  System Overview','2.  Accessing the System','3.  Demo Credentials',
   '4.  User Roles & Permissions','5.  Navigation & Layout','6.  Dashboard',
-  '7.  Order Management','8.  Menu Management','9.  Inventory Management',
-  '10. Restaurant & Building Management','11. User Management',
-  '12. Module Access Control','13. QR Code Scanner','14. Delivery Confirmation',
-  '15. Module Management (Super Admin)','Glossary','Appendix'];
+  '7.  Profile Management','8.  Notification System',
+  '9.  Order Management','10. Menu Management','11. Inventory Management',
+  '12. Restaurant & Building Management','13. User Management',
+  '14. Module Access Control','15. QR Code Scanner','16. Delivery Confirmation',
+  '17. Module Management (Super Admin)','Glossary','Appendix'];
 tocEntries.forEach(item => { doc.fontSize(10.5).fillColor(BLUE).font('Helvetica-Bold').text(item, { indent: 10 }); doc.moveDown(0.28); });
 
 // ═══════════════════════════════ EXECUTIVE SUMMARY ═══════════════════════════════
@@ -364,20 +365,108 @@ np();
 h1('6. Dashboard');
 
 h2('Overview');
-p('The Dashboard serves as the central command centre and default landing page after login. It provides an at-a-glance view of business performance through KPI cards, quick-action shortcuts, and a customisable widget system with eight panel types. Super Administrators see additional Building Reports with cross-location aggregated data.');
+p('The Dashboard serves as the central command centre and default landing page after login. It provides an at-a-glance view of business performance through six KPI cards displaying real-time metrics for Total Users, Buildings, Restaurants, Orders, Revenue, and Pending Orders. Below the KPIs, a customisable widget system with three section rows \u2014 Business Insights, Operational Dashboard, and Management Overview \u2014 presents detailed analytics panels including revenue trends, order summaries, kitchen status, inventory levels, customer analytics, staff distribution, payment breakdowns, and real-time notifications.');
+p('Unlike traditional static dashboards, this platform draws all widget data from live database queries, ensuring that every number, chart, and metric reflects the current state of operations. The KPI cards automatically fetch their values using the system\'s batch data API, while the section widgets query a dedicated section-data endpoint that aggregates sales, orders, kitchen, customer, staff, and payment information in a single request. Super Administrators see organisation-wide aggregates, while Building Managers and Restaurant Managers see data scoped to their assigned locations.');
 
 drawTable(['Role', 'Data Scope', 'Additional Widgets'], [
-  ['Super Admin', 'Organisation-wide', 'Building Reports (cross-location comparison)'],
-  ['Building Manager', 'Assigned building', 'Standard KPI widgets'],
-  ['Restaurant Manager', 'Assigned restaurant', 'Outlet-specific KPIs'],
-  ['Chef', 'Assigned restaurant', 'Order-focused KPIs'],
-  ['Customer', 'Self', 'Order history, favourite items'],
+  ['Super Admin', 'Organisation-wide', 'Building Reports, cross-location comparison'],
+  ['Building Manager', 'Assigned building', 'Building-scoped KPIs and analytics'],
+  ['Restaurant Manager', 'Assigned restaurant', 'Outlet-specific KPIs and operational panels'],
+  ['Chef', 'Assigned restaurant', 'Order-focused KPIs, kitchen status panel'],
+  ['Customer', 'Self', 'Personal order history and food card overview'],
 ], [150, 140, W - 300]);
 
-flowChart('Dashboard Loading Sequence', ['Start: Login\nsuccessful', 'Fetch KPI data\nfrom API', 'Render KPI\ncards row', 'Load widget\nsettings', 'Fetch and render\nenabled widgets', 'End: Dashboard\nready']);
+flowChart('Dashboard Loading Sequence', ['Start: Login\nsuccessful', 'Fetch KPI data\nfrom widget API', 'Render KPI\ncards row', 'Fetch section data\nfrom dashboard API', 'Render Revenue,\nOrders, Kitchen...', 'Render Customers,\nStaff, Payments...', 'End: Dashboard\nready']);
+
+h2('Key Capabilities');
+p('The dashboard is organised into three distinct sections. The Business Insights row displays a revenue analysis panel with today\'s, weekly, monthly, and all-time revenue figures, each with trend indicators showing performance direction. Alongside it, an Orders Summary panel shows active orders, completed today, cancelled orders, and average order value. The Operational Dashboard row provides a Kitchen Status panel with counts for pending, in-preparation, ready-to-serve, and delivered-today orders; an Inventory panel visualises stock levels across categories; and a Customer Analytics panel displays total, active, new, and returning customer counts. The Management Overview row includes a real-time Notification feed, a Staff panel showing user role distribution, and a Payment breakdown panel.');
+p('Each widget panel includes a refresh action and displays a "last updated" timestamp. Users can customise their dashboard layout by hiding entire rows using the "Customize" toggle, with hidden row preferences persisted in the browser\'s local storage for consistent viewing across sessions.');
 
 np();
-h1('7. Order Management');
+h1('7. Profile Management');
+
+h2('Overview');
+p('The Profile Management module enables every authenticated user to view and edit their personal account details from a single, consolidated interface. Users can update their display name, email address, and profile photograph, as well as change their password through a secure, OTP-verified workflow. Super Administrators additionally have the ability to edit any user\'s profile from the User Management page, providing centralised account administration across the organisation.');
+p('The profile page is accessible to all roles and serves as the user\'s identity hub within the system. Changes made to profile information are reflected immediately across the platform, including in order histories, notification delivery, and team views. The OTP-based password change workflow ensures that password updates are authenticated through the user\'s registered email, adding an extra layer of security beyond simple password confirmation.');
+
+h2('Who Can Use This Module?');
+drawTable(['Role', 'Access Level', 'Purpose'], [
+  ['Super Admin', 'Full', 'Edit own profile; edit any user profile from User Management'],
+  ['Building Manager', 'Own Profile', 'Update personal details and change password'],
+  ['Restaurant Manager', 'Own Profile', 'Update personal details and change password'],
+  ['Chef', 'Own Profile', 'Update personal details and change password'],
+  ['Customer', 'Own Profile', 'Update personal details and change password'],
+], [140, 120, W - 270]);
+
+h2('Where Can It Be Accessed?');
+p('The Profile page is accessible from the sidebar navigation under "Profile" for all roles, and also from the user dropdown menu in the Top Bar. Super Administrators can additionally access any user\'s module configuration from the User Management page. Navigation path: Sidebar \u2192 Profile, or Top Bar Menu \u2192 Profile.');
+
+h2('How It Works');
+p('When a user navigates to the Profile page, the system displays their current information in a clean card layout showing the avatar, username, email address, role badge, assigned building and restaurant (where applicable), and phone number. An "Edit" button enables the user to switch to edit mode, revealing editable fields for username, email, and avatar upload. The avatar upload supports common image formats up to 2 MB in size and converts the image to a base64 data URL for storage.');
+p('The password change feature follows a three-step verification workflow. First, the user enters their current password, the new password, and a confirmation of the new password. Upon submission, the system validates the current password against the stored hash and, if correct, sends a six-digit OTP to the user\'s registered email address. The user then enters the OTP in the verification step, and upon successful validation, the password is updated. In development environments where email is not configured, the OTP is displayed on screen for testing purposes.');
+
+screenshot('Profile Page', 'The profile management interface showing user details, edit controls, and the password change section.', ['Avatar display with upload capability for profile photographs', 'Editable username and email fields with validation', 'OTP-based password change workflow with step indicators', 'Role badge and organisational context display']);
+
+flowChart('Password Change Process', ['Start: User opens\nProfile page', 'Clicks Change\nPassword', 'Enters current\n+ new password', 'Current pwd\nvalid?', 'OTP sent to\nregistered email', 'User enters\nOTP code', 'OTP valid?', 'Password\nupdated', 'End: Success\nnotification']);
+
+h2('Example Scenario');
+p('A Restaurant Manager receives a notification that their password will expire soon. They navigate to their Profile page, click "Change Password," enter their current password and a new secure password. The system sends a six-digit OTP to their registered email. The manager checks their email inbox, copies the code, enters it on the verification screen, and receives a confirmation that their password has been updated successfully. They can now continue using the system with their new credentials.');
+
+h2('Business Rules');
+li('Avatar images are limited to 2 MB in size and are stored as base64-encoded strings.');
+li('Passwords must be at least 6 characters long and are hashed using bcrypt before storage.');
+li('OTP codes expire after 10 minutes; expired codes cannot be used for verification.');
+li('Each OTP can only be used once; a new OTP is generated for each password change request.');
+li('The current password must be verified before an OTP is sent.');
+li('Super Administrators can edit any user\'s profile including avatar, username, and email through the User Management page.');
+
+h2('Expected Outcome');
+p('Upon completing a profile update, the changes are immediately visible on the Profile page and reflected across the system. After a successful password change, the user can log out and log back in using the new password without any interruption to their current session.');
+
+np();
+h1('8. Notification System');
+
+h2('Overview');
+p('The Notification System provides real-time, role-aware alerts that keep all users informed of important events as they happen. Unlike traditional polling-based systems that periodically check for updates, this platform uses Socket.IO WebSocket connections to push notifications instantly from the server to connected clients. Notifications are persisted in the database, allowing users to view their full notification history even after refreshing the page or logging in from a different device.');
+p('The system generates notifications for events relevant to each user role: customers receive order status updates as their food progresses through preparation and delivery; restaurant staff are alerted when new orders are placed and require attention; and all users can see a consolidated view of their recent notifications in both the Top Bar dropdown and the dashboard widget. The notification bell icon displays an unread count badge, providing an immediate visual cue of pending notifications.');
+
+h2('Who Can Use This Module?');
+drawTable(['Role', 'Notification Types Received', 'Access'], [
+  ['Super Admin', 'All system events, new orders, order updates', 'Top Bar, Dashboard widget'],
+  ['Building Manager', 'Order updates for building restaurants', 'Top Bar, Dashboard widget'],
+  ['Restaurant Manager', 'New orders, order status changes, payment confirmations', 'Top Bar, Dashboard widget'],
+  ['Chef', 'New orders, order status changes', 'Top Bar, Dashboard widget'],
+  ['Customer', 'Payment success, order preparing, order ready, delivered', 'Top Bar, Dashboard widget'],
+], [140, 200, W - 350]);
+
+h2('Where Can It Be Accessed?');
+p('Notifications are accessible from two locations: the bell icon in the Top Bar provides a quick-dropdown view of recent notifications with a "Mark all read" action; the Notification widget on the Dashboard displays the five most recent notifications alongside other dashboard panels. Navigation path: Top Bar \u2192 Bell Icon, or Dashboard \u2192 Notification Widget.');
+
+h2('How It Works');
+p('When a significant event occurs, such as a payment being processed or an order status changing, the backend controller creates a Notification record in the database and simultaneously emits a real-time event through Socket.IO to the affected user\'s personal room. The frontend, which maintains a persistent WebSocket connection, receives the event and immediately prepends the new notification to the in-memory notification list without requiring a page refresh.');
+p('On initial page load, the frontend fetches the user\'s full notification history from the REST API, ensuring that notifications persist across sessions. The "Mark all read" action sends a PATCH request to the API, which updates all unread notifications to read status in the database, and the local state is updated to reflect the change. The unread count badge on the bell icon recalculates automatically based on notifications with read set to false.');
+
+flowChart('Notification Flow', ['Start: Event occurs\n(order update, payment)', 'Controller creates\nNotification record', 'Socket.IO emits\nnew-notification event', 'User\'s client\nreceives event', 'Notification prepended\nto local state', 'Bell badge count\nupdates', 'Dashboard widget\nshows latest', 'End: User sees\nnotification']);
+
+h2('Example Scenario');
+h3('Customer Scenario');
+p('A customer places an order and completes payment. The system creates a "Payment successful" notification and sends it to the customer\'s notification feed. When the chef starts preparing the order, another notification is pushed: "Your order is being prepared!" When the order is ready for pickup, the customer receives a third notification: "Your order is ready!" All three appear in real time in the customer\'s notification dropdown without any page refresh.');
+
+h3('Staff Scenario');
+p('A Restaurant Manager is monitoring operations from the Dashboard. A customer completes payment for a new order. The system creates a "New order #ORD-1234 from Customer" notification and emits it to the restaurant room. The manager sees the notification appear instantly in the Top Bar dropdown with an updated unread count and can immediately navigate to the Orders page to begin processing.');
+
+h2('Business Rules');
+li('Notifications are persisted in the database and survive page refreshes and session changes.');
+li('Each notification is linked to a specific user and optionally to a specific order for context.');
+li('The "Mark all read" action updates the database and cannot be undone.');
+li('Unread notifications are visually distinguished from read notifications by reduced opacity.');
+li('Notification history is limited to the 100 most recent records per user.');
+
+h2('Expected Outcome');
+p('Users receive immediate, real-time visibility into events that matter to their role without needing to manually refresh pages or poll for updates. The combination of persisted history and real-time push ensures that no important event is missed, whether the user is actively watching the screen or catching up after being away.');
+
+np();
+h1('9. Order Management');
 
 h2('Overview');
 p('Order Management handles the complete order lifecycle from placement through delivery across five stages: PENDING_PAYMENT, PAID, PREPARING, COMPLETED, and DELIVERED. Real-time updates via Socket.IO ensure all staff see changes instantly. When an order reaches COMPLETED, the system automatically deducts corresponding ingredient quantities from inventory if recipe mappings exist.');
@@ -399,7 +488,7 @@ li('Order codes are unique 6-character alphanumeric strings generated at order c
 li('Socket.IO broadcasts all status changes to connected clients in real-time.');
 
 np();
-h1('8. Menu Management');
+h1('10. Menu Management');
 
 h2('Overview');
 p('The Menu Management module enables restaurants to create, edit, and maintain digital menu offerings. Each item includes a name, description, price in INR, food category (VEG, NON_VEG, or VEGAN with colour-coded indicators), an optional image, and an active/inactive toggle. Changes take effect immediately in the customer-facing ordering interface.');
@@ -419,7 +508,7 @@ li('Only active items are visible to customers; inactive items retain database r
 li('Each restaurant maintains its own independent menu.');
 
 np();
-h1('9. Inventory Management');
+h1('11. Inventory Management');
 
 h2('Overview');
 p('The Inventory Management module provides comprehensive control over restaurant stock with 12 integrated sections covering the complete inventory lifecycle. The auto-deduction feature, powered by recipe mappings, eliminates manual stock adjustments and provides real-time inventory accuracy. The structured procurement workflow ensures optimal stock levels through systematic ordering and approval controls.');
@@ -439,7 +528,7 @@ li('Transfers and Adjustments require managerial approval before execution.');
 li('All stock changes create an InventoryMovement audit record for complete traceability.');
 
 np();
-h1('10. Restaurant & Building Management');
+h1('12. Restaurant & Building Management');
 
 h2('Overview');
 p('Buildings represent physical locations such as shopping malls or complexes. Restaurants are operational outlets within buildings. This hierarchy scopes all other modules: menus, orders, inventory, and users belong to a specific restaurant within a specific building. A Building Manager oversees all restaurants in their building; each Restaurant Manager handles their own outlet.');
@@ -456,7 +545,7 @@ li('Deactivating a Building hides all its Restaurants from active views.');
 li('Buildings and Restaurants with associated orders or users cannot be permanently deleted.');
 
 np();
-h1('11. User Management');
+h1('13. User Management');
 
 h2('Overview');
 p('The User Management module provides centralised control over system access. Administrators can create, edit, and delete user accounts, assign roles with appropriate permissions, and configure module-level access toggles. User management is distributed according to the role hierarchy, allowing each management level to handle their own staffing needs.');
@@ -473,7 +562,7 @@ li('Self-deletion is prevented by the system.');
 li('Passwords are stored as bcrypt hashes; plain text is never persisted.');
 
 np();
-h1('12. Module Access Control');
+h1('14. Module Access Control');
 
 h2('Overview');
 p('Module Access Control enables Super Administrators to fine-tune which modules each user can access, overriding default role-based permissions. The resolution follows a three-tier priority system: User-level overrides take highest precedence, followed by Restaurant-level, then Building-level, with a default fallback of all modules enabled.');
@@ -486,7 +575,7 @@ li('Super Admin bypasses all override checks and sees every module.');
 li('Overrides use an upsert pattern: create new or update existing as needed.');
 
 np();
-h1('13. QR Code Scanner');
+h1('15. QR Code Scanner');
 
 h2('Overview');
 p('The QR Code Scanner enables staff to instantly identify orders using the customer\'s digital receipt. Integrated into both the Orders page and Delivery Confirmation page, the scanner reads QR codes encoding { orderId, orderCode } for fast, error-free order lookup that eliminates manual data entry errors.');
@@ -503,7 +592,7 @@ li('Camera permission must be granted by the browser for the scanner to function
 li('Only PAID and COMPLETED orders display QR codes for scanning.');
 
 np();
-h1('14. Delivery Confirmation');
+h1('16. Delivery Confirmation');
 
 h2('Overview');
 p('Delivery Confirmation is the terminal step in the order lifecycle. Staff formally record that an order has been handed over to the customer, updating the status to DELIVERED. The feature supports QR code scanning for instant identification and manual order code entry as a fallback.');
@@ -520,20 +609,32 @@ li('Confirmation only works for orders currently in COMPLETED status.');
 li('Delivery confirmation is irreversible; no undo is available.');
 
 np();
-h1('15. Module Management (Super Admin)');
+h1('17. Module Management (Super Admin)');
 
 h2('Overview');
-p('Module Management provides a comprehensive interface for Super Administrators to configure system-wide module overrides at the Building, Restaurant, or User level. This page offers a centralised view of all existing overrides and enables bulk permission changes that cascade to all affected users.');
+p('Module Management provides a comprehensive interface for Super Administrators to configure system-wide module overrides at the Building, Restaurant, or User level. The page is organised into four views accessed through toggle buttons: Building, Restaurant, User, and a dedicated User Modules view. The Building, Restaurant, and User tabs display existing overrides at each level with options to add new overrides via a modal dialogue that includes entity selectors for choosing the specific building, restaurant, or user. The User Modules view presents a complete user-by-user breakdown showing exactly which modules are enabled and disabled for every account in the system.');
+p('The User Modules view is particularly powerful for auditing and troubleshooting, displaying each user alongside their effective module set. For users who have custom module overrides, the view shows a "Custom" badge and lists both enabled and disabled modules separately. For users relying on role defaults, a "Role Defaults" badge is displayed along with the modules that their role entity is configured to access. This comprehensive visibility enables administrators to quickly verify that the right users have access to the right features without needing to cross-reference between multiple screens.');
 
 drawTable(['Role', 'Access Level', 'Actions Allowed'], [
-  ['Super Admin', 'Full', 'View all modules, configure overrides at all levels'],
+  ['Super Admin', 'Full', 'View all modules, configure overrides at all levels, user-module matrix'],
   ['All Other Roles', 'No Access', 'Module Management page is not visible'],
 ], [140, 100, W - 250]);
+
+h2('How It Works');
+p('The page loads all modules, all existing overrides at all levels, and the complete list of buildings, restaurants, and users on initial render. The active tab determines which set of overrides is displayed in the list view. Adding a new override opens a modal with three fields: the entity selector (building, restaurant, or user depending on the active tab), the module selector, and the enabled/disabled toggle. Saving creates or updates the override record and refreshes the override list.');
+p('The User Modules tab provides a fundamentally different view. Instead of listing raw override records, it computes and displays the effective module access for every user in the system. For each user, the system evaluates whether they have custom overrides (from the User Management page or direct override creation) or rely on role defaults defined in the frontend configuration. Enabled modules are displayed with green badges and a checkmark icon; disabled modules appear with red badges and a crossmark icon, giving administrators an immediate, intuitive understanding of each user\'s access profile.');
+
+screenshot('User Modules View', 'The User Modules tab displaying effective module access for all users.', ['User cards showing username, email, role badge, and override source indicator', 'Green badges with check icons for enabled modules', 'Red badges with cross icons for disabled modules', 'Custom vs Role Defaults source labelling for audit clarity']);
+
+flowChart('Module Management Workflows', ['Start: Admin opens\nModule Management', 'Choose tab:\nBuilding/Restaurant/User', 'Existing overrides\nlisted for level', 'Click Add\nOverride', 'Select entity,\nmodule, enable/disable', 'Override saved;\nlist refreshed', 'OR: View User\nModules tab', 'All users with\neffective access shown', 'End: Complete\nvisibility']);
 
 h2('Business Rules');
 li('Only Super Administrators can access this page and its API endpoints.');
 li('Resolution priority: User-level > Restaurant-level > Building-level > Default (enabled).');
 li('Super Admin bypasses all override checks regardless of settings.');
+li('Override records can be deleted individually from the list view using the trash icon.');
+li('The User Modules view is read-only; modifications must be made through the User Management page or the User overrides tab.');
+li('Role defaults are defined in the system constants and only apply when no explicit override exists for a user.');
 
 // ═══════════════════════════════ GLOSSARY ═══════════════════════════════
 np();
