@@ -10,8 +10,11 @@ export default class ErrorBoundary extends Component {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error, errorInfo) {
-    console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+  componentDidCatch(error) {
+    if (error.message?.includes('Failed to fetch dynamically imported module') || error.message?.includes('Loading chunk')) {
+      window.location.reload();
+      return;
+    }
   }
 
   handleReset = () => {

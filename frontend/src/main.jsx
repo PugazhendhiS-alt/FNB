@@ -7,6 +7,20 @@ import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import './styles/globals.css';
 
+window.addEventListener('error', (e) => {
+  if (e.message?.includes('dynamically imported module') || e.message?.includes('Loading chunk')) {
+    e.preventDefault();
+    window.location.reload();
+  }
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  if (e.reason?.message?.includes('dynamically imported module') || e.reason?.message?.includes('Loading chunk')) {
+    e.preventDefault();
+    window.location.reload();
+  }
+});
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>

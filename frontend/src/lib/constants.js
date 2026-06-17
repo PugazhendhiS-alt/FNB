@@ -117,7 +117,6 @@ export const MODULE_PATH_MAP = {
 export const SIDEBAR_LINKS = {
   SUPERADMIN: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
     { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
     { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/users', label: 'Users', icon: 'UsersIcon' },
@@ -126,33 +125,34 @@ export const SIDEBAR_LINKS = {
     { path: '/menu', label: 'Menu Items', icon: 'RectangleStackIcon' },
     { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },
     { path: '/modules', label: 'Modules', icon: 'PuzzlePieceIcon' },
+    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   BUILDING_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
     { path: '/users', label: 'Users', icon: 'UsersIcon' },
     { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
+    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   RESTAURANT_MANAGER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
     { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
     { path: '/users', label: 'Users', icon: 'UsersIcon' },
     { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
     { path: '/menu', label: 'Menu', icon: 'RectangleStackIcon' },
     { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },
+    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   CHEF: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
     { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
     { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
+    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   CUSTOMER: [
     { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
     { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
     { path: '/orders', label: 'My Orders', icon: 'ShoppingBagIcon' },
+    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
 };
