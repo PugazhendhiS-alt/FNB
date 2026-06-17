@@ -12,7 +12,7 @@ import {
 
 export default function TopBar({ onMenuClick }) {
   const { user, logout } = useAuth();
-  const { notifications, setNotifications } = useSocket();
+  const { notifications, markAllAsRead } = useSocket();
   const [showNotif, setShowNotif] = useState(false);
   const [dark, setDark] = useState(false);
 
@@ -25,10 +25,6 @@ export default function TopBar({ onMenuClick }) {
   const toggleDark = () => {
     setDark(!dark);
     document.documentElement.classList.toggle('dark');
-  };
-
-  const markAllRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   };
 
   return (
@@ -89,7 +85,7 @@ export default function TopBar({ onMenuClick }) {
                 <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
                   <h3 className="font-semibold text-sm">Notifications</h3>
                   {unreadCount > 0 && (
-                    <button onClick={markAllRead} className="text-xs text-primary-600 hover:underline">Mark all read</button>
+                    <button onClick={markAllAsRead} className="text-xs text-primary-600 hover:underline">Mark all read</button>
                   )}
                 </div>
                 <div className="overflow-y-auto flex-1">

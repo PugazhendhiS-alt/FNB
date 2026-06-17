@@ -35,4 +35,8 @@ function emitNotification(io, userId, notification) {
   io.to(`user:${userId}`).emit('new-notification', notification);
 }
 
-module.exports = { setupSocket, emitOrderUpdate, emitNotification };
+function emitStaffNotification(io, restaurantId, notification) {
+  io.to(`restaurant:${restaurantId}`).emit('new-notification', notification);
+}
+
+module.exports = { setupSocket, emitOrderUpdate, emitNotification, emitStaffNotification };

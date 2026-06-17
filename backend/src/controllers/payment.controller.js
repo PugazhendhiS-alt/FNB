@@ -1,6 +1,6 @@
 ﻿const { PrismaClient } = require('@prisma/client');
 const { generateQRData } = require('../utils/helpers');
-const { emitOrderUpdate } = require('../socket');
+const { emitOrderUpdate, emitNotification, emitStaffNotification } = require('../socket');
 
 const prisma = new PrismaClient();
 
@@ -48,7 +48,28 @@ async function processPayment(req, res, next) {
         },
       });
 
-      emitOrderUpdate(req.app.get('io'), orderId, { ...updated, notification });
+      const io = req.app.get('io');
+      emitOrderUpdate(io, orderId, { ...updated, notification });
+      emitNotification(io, order.customerId, notification);
+
+      const staffUsers = await prisma.user.findMany({
+        where: {
+          restaurantId: order.restaurantId,
+          role: { in: ['CHEF', 'RESTAURANT_MANAGER'] },
+        },
+        select: { id: true },
+      });
+      for (const staff of staffUsers) {
+        const sn = await prisma.notification.create({
+          data: {
+            message: `New order #${updated.orderCode} from ${updated.customer?.username || 'Guest'}`,
+            type: 'NEW_ORDER',
+            orderId: order.id,
+            userId: staff.id,
+          },
+        });
+        emitNotification(io, staff.id, sn);
+      }
 
       res.json({
         success: true,

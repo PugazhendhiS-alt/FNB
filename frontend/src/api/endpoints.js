@@ -126,6 +126,13 @@ export const inventoryAPI = {
   getMovements: (params) => client.get('/inventory/movements', { params }),
 };
 
+export const notificationAPI = {
+  getAll: () => client.get('/notifications'),
+  getUnreadCount: () => client.get('/notifications/unread-count'),
+  markRead: (id) => client.patch(`/notifications/${id}/read`),
+  markAllRead: () => client.patch('/notifications/read-all'),
+};
+
 export const moduleAPI = {
   getAll: () => client.get('/modules'),
   getMyAccess: () => client.get('/modules/my-access'),
