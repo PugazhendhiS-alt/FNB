@@ -12,6 +12,10 @@ router.post('/guest', otpCtrl.guestLogin);
 router.get('/profile', authenticate, ctrl.getProfile);
 router.post('/switch-role', authenticate, ctrl.switchRole);
 
+router.put('/profile', authenticate, ctrl.updateProfile);
+router.post('/change-password', authenticate, ctrl.changePassword);
+router.post('/verify-password-change', authenticate, ctrl.verifyPasswordChange);
+
 router.get('/users', authenticate, authorize(roles.SUPERADMIN, roles.BUILDING_MANAGER, roles.RESTAURANT_MANAGER), ctrl.getAllUsers);
 router.post('/users', authenticate, authorize(roles.SUPERADMIN, roles.BUILDING_MANAGER, roles.RESTAURANT_MANAGER), ctrl.createUser);
 router.put('/users/:id', authenticate, authorize(roles.SUPERADMIN, roles.BUILDING_MANAGER, roles.RESTAURANT_MANAGER), ctrl.updateUser);

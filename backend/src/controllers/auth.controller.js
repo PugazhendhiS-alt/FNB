@@ -1,9 +1,14 @@
 ﻿const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('@prisma/client');
 const { generateToken } = require('../utils/jwt');
+const { sendOtpEmail } = require('../utils/mailer');
 const { roles, roleHierarchy } = require('../middleware/roles');
 
 const prisma = new PrismaClient();
+
+function generateOtpCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
 
 async function login(req, res, next) {
   try {
@@ -234,4 +239,87 @@ async function deleteUser(req, res, next) {
   }
 }
 
-module.exports = { login, register, getProfile, switchRole, getAllUsers, createUser, updateUser, deleteUser };
+async function updateProfile(req, res, next) {
+  try {
+    const { username, email, avatar } = req.body;
+    const data = {};
+    if (username !== undefined) data.username = username;
+    if (email !== undefined) data.email = email;
+    if (avatar !== undefined) data.avatar = avatar;
+
+    if (username || email) {
+      const existing = await prisma.user.findFirst({
+        where: {
+          OR: [
+            ...(username ? [{ username, NOT: { id: req.user.id } }] : []),
+            ...(email ? [{ email, NOT: { id: req.user.id } }] : []),
+          ],
+        },
+      });
+      if (existing) return res.status(409).json({ message: 'Username or email already taken.' });
+    }
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data,
+      include: { building: true, restaurant: { include: { building: true } } },
+    });
+    const { password: _, ...userData } = user;
+    res.json(userData);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function changePassword(req, res, next) {
+  try {
+    const { currentPassword } = req.body;
+    if (!currentPassword) return res.status(400).json({ message: 'Current password is required.' });
+
+    const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) return res.status(401).json({ message: 'Current password is incorrect.' });
+
+    const code = generateOtpCode();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+
+    await prisma.otp.create({
+      data: { userId: user.id, code, expiresAt, type: 'PASSWORD_CHANGE' },
+    });
+
+    await sendOtpEmail(user.email, code, user.username);
+
+    const isDevMode = !process.env.SMTP_HOST;
+    const response = { message: 'OTP sent to your email.' };
+    if (isDevMode) response.otpCode = code;
+    res.json(response);
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function verifyPasswordChange(req, res, next) {
+  try {
+    const { code, newPassword } = req.body;
+    if (!code || !newPassword) return res.status(400).json({ message: 'OTP code and new password are required.' });
+    if (newPassword.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+
+    const otp = await prisma.otp.findFirst({
+      where: { userId: req.user.id, code, used: false, type: 'PASSWORD_CHANGE', expiresAt: { gte: new Date() } },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (!otp) return res.status(401).json({ message: 'Invalid or expired OTP.' });
+
+    await prisma.otp.update({ where: { id: otp.id }, data: { used: true } });
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: await bcrypt.hash(newPassword, 10) },
+    });
+
+    res.json({ message: 'Password changed successfully.' });
+  } catch (err) {
+    next(err);
+  }
+}
+
+module.exports = { login, register, getProfile, switchRole, getAllUsers, createUser, updateUser, deleteUser, updateProfile, changePassword, verifyPasswordChange };

@@ -138,6 +138,15 @@ export function AuthProvider({ children }) {
     setAllowedModules(null);
   };
 
+  const updateProfile = async (data) => {
+    const res = await authAPI.updateProfile(data);
+    try {
+      localStorage.setItem('user', JSON.stringify(res.data));
+    } catch {}
+    setUser(res.data);
+    return res.data;
+  };
+
   const switchRole = async (role) => {
     const res = await authAPI.switchRole(role);
     try {
@@ -150,7 +159,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, isGuest, allowedModules, login, sendOtp, verifyOtp, guestLogin, register, logout, switchRole }}>
+    <AuthContext.Provider value={{ user, token, loading, isGuest, allowedModules, login, sendOtp, verifyOtp, guestLogin, register, logout, updateProfile, switchRole }}>
       {children}
     </AuthContext.Provider>
   );

@@ -108,7 +108,11 @@ export default function Users() {
     });
     setAvatarPreview(user.avatar || '');
     const userOverrides = userModuleOverrides.filter(ov => ov.userId === user.id);
-    setSelectedModules(userOverrides.filter(ov => ov.isEnabled).map(ov => ov.moduleId));
+    if (userOverrides.length > 0) {
+      setSelectedModules(userOverrides.filter(ov => ov.isEnabled).map(ov => ov.moduleId));
+    } else {
+      setSelectedModules(getDefaultModuleIds(user.role));
+    }
     setModalOpen(true);
   };
 
@@ -283,7 +287,7 @@ export default function Users() {
               value={form.role}
               onChange={(e) => {
                 setForm({ ...form, role: e.target.value, buildingId: '', restaurantId: '' });
-                if (!editing) setSelectedModules(getDefaultModuleIds(e.target.value));
+                setSelectedModules(getDefaultModuleIds(e.target.value));
               }}
             >
               {assignableRoles.map(([key, label]) => (
@@ -341,7 +345,7 @@ export default function Users() {
           {isSuperadmin && modules.length > 0 && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Module Access</label>
-              <p className="text-xs text-gray-400 mb-2">Select modules this user can access. Leave all unchecked for full access.</p>
+              <p className="text-xs text-gray-400 mb-2">Modules are pre-selected based on the user's role. Uncheck to restrict access or check to grant additional access.</p>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {modules.map(mod => (
                   <label key={mod.id} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-colors ${

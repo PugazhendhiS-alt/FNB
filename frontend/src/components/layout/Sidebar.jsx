@@ -4,13 +4,13 @@ import { useAuth } from '../../context/AuthContext';
 import { SIDEBAR_LINKS, MODULE_PATH_MAP } from '../../lib/constants';
 import {
   ChartBarIcon, BuildingOffice2Icon, HomeModernIcon, RectangleStackIcon,
-  ShoppingBagIcon, TruckIcon, UsersIcon, CubeIcon, PuzzlePieceIcon,
+  ShoppingBagIcon, TruckIcon, UsersIcon, CubeIcon, PuzzlePieceIcon, UserCircleIcon,
 } from '@heroicons/react/24/outline';
 
 const iconMap = {
   ChartBarIcon, BuildingOffice2Icon, HomeModernIcon,
   RectangleStackIcon, ShoppingBagIcon, TruckIcon, UsersIcon, CubeIcon,
-  PuzzlePieceIcon,
+  PuzzlePieceIcon, UserCircleIcon,
 };
 
 export default function Sidebar({ open, onClose }) {

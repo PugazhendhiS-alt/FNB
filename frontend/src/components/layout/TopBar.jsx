@@ -3,6 +3,7 @@ import { Fragment, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
 import { ROLE_LABELS } from '../../lib/constants';
+import { Link } from 'react-router-dom';
 import {
   BellIcon, ChevronDownIcon, ArrowRightOnRectangleIcon,
   UserCircleIcon, SunIcon, MoonIcon, Bars3Icon,
@@ -127,7 +128,18 @@ export default function TopBar({ onMenuClick }) {
                   <p className="text-sm font-medium">{user?.username}</p>
                   <p className="text-xs text-gray-400">{ROLE_LABELS[user?.role]}</p>
                 </div>
-                <div className="p-2">
+                <div className="p-2 space-y-0.5">
+                  <Menu.Item>
+                    {({ active }) => (
+                      <Link
+                        to="/profile"
+                        className={`${active ? 'bg-gray-100 dark:bg-gray-700' : ''} group flex w-full items-center gap-2 px-3 py-2 text-sm rounded-lg min-h-[40px] text-gray-700 dark:text-gray-300`}
+                      >
+                        <UserCircleIcon className="w-4 h-4" />
+                        Profile
+                      </Link>
+                    )}
+                  </Menu.Item>
                   <Menu.Item>
                     {({ active }) => (
                       <button
