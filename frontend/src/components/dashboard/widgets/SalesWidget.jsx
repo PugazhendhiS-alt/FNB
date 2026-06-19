@@ -13,10 +13,10 @@ const METRICS = [
 
 export default function SalesWidget({ data = {}, loading, onRemove, onRefresh }) {
   const stats = {
-    today: { value: data.today ?? 48250, trend: '+12.5%' },
-    weekly: { value: data.weekly ?? 285000, trend: '+8.3%' },
-    monthly: { value: data.monthly ?? 1250000, trend: '+15.2%' },
-    revenue: { value: data.revenue ?? 4520000, trend: '+10.8%' },
+    today: { value: data.sales_today ?? 0, trend: '+0%' },
+    weekly: { value: data.sales_weekly ?? 0, trend: '+0%' },
+    monthly: { value: data.sales_monthly ?? 0, trend: '+0%' },
+    revenue: { value: data.sales_revenue ?? 0, trend: '+0%' },
   };
 
   return (

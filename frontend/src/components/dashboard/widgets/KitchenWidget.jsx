@@ -15,11 +15,11 @@ const STATUS_ITEMS = [
 
 export default function KitchenWidget({ data = {}, loading, onRemove, onRefresh }) {
   const counts = {
-    pending: data.pending ?? 8,
-    preparing: data.preparing ?? 5,
-    ready: data.ready ?? 3,
-    delivered: data.delivered ?? 42,
-    total: (data.pending ?? 8) + (data.preparing ?? 5) + (data.ready ?? 3),
+    pending: data.kitchen_pending ?? 0,
+    preparing: data.kitchen_preparing ?? 0,
+    ready: data.kitchen_ready ?? 0,
+    delivered: data.kitchen_delivered ?? 0,
+    total: (data.kitchen_pending ?? 0) + (data.kitchen_preparing ?? 0) + (data.kitchen_ready ?? 0),
   };
 
   return (

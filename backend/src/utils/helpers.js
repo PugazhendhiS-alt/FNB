@@ -28,4 +28,8 @@ function calculateTotal(items) {
   return items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
 }
 
-module.exports = { generateOrderCode, generateQRData, calculateTotal };
+function generateOtpCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+module.exports = { generateOrderCode, generateQRData, calculateTotal, generateOtpCode };

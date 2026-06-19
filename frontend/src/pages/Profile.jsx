@@ -89,7 +89,7 @@ export default function Profile() {
     if (!otpCode || !newPassword) return toast.error('OTP and new password are required.');
     setPwSending(true);
     try {
-      await authAPI.verifyPasswordChange({ code: otpCode, newPassword });
+      await authAPI.verifyPasswordChange({ code: otpCode, newPassword, confirmPassword });
       toast.success('Password changed successfully');
       setPwOpen(false);
       setPwStep('current');

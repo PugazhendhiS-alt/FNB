@@ -35,10 +35,7 @@ export default function Orders() {
   useEffect(() => {
     fetchOrders();
     if (socket) {
-      socket.on('order-updated', (data) => {
-        setOrders(prev => prev.map(o => o.id === data.id ? { ...o, ...data } : o));
-        fetchOrders();
-      });
+      socket.on('order-updated', () => fetchOrders());
     }
     return () => { if (socket) socket.off('order-updated'); };
   }, [socket]);

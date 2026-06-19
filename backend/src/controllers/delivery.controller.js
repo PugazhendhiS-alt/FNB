@@ -19,6 +19,10 @@ async function confirmDelivery(req, res, next) {
       return res.status(404).json({ message: 'Invalid order code. Order not found.' });
     }
 
+    if (req.user.role === 'RESTAURANT_MANAGER' && order.restaurantId !== req.user.restaurantId) {
+      return res.status(403).json({ message: 'You can only confirm delivery for your restaurant.' });
+    }
+
     if (order.status !== 'COMPLETED') {
       return res.status(400).json({
         message: `Order must be COMPLETED before delivery. Current status: ${order.status}`,

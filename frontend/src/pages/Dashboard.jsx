@@ -49,7 +49,7 @@ export default function Dashboard() {
         if (cancelled) return;
         const data = dataRes.data || {};
         const mapped = statWidgets.map(w => ({
-          key: WIDGET_TYPE_TO_KPI[w.widgetType] || w.widgetType,
+          key: `${WIDGET_TYPE_TO_KPI[w.widgetType] || w.widgetType}_${w.id}`,
           value: data[w.id]?.value ?? 0,
           trend: data[w.id]?.trend,
           trendLabel: data[w.id]?.trendLabel,
@@ -65,15 +65,19 @@ export default function Dashboard() {
       }
     }
 
-    async function loadSectionData() {
+      async function loadSectionData() {
       try {
         const res = await dashboardAPI.getSectionData();
         if (!cancelled && res.data) {
-          const flat = {};
-          Object.values(res.data).forEach(group => {
-            if (group && typeof group === 'object') Object.assign(flat, group);
+          const prefixed = {};
+          Object.entries(res.data).forEach(([groupKey, group]) => {
+            if (group && typeof group === 'object') {
+              Object.entries(group).forEach(([key, val]) => {
+                prefixed[`${groupKey}_${key}`] = val;
+              });
+            }
           });
-          setSectionData(flat);
+          setSectionData(prefixed);
         }
       } catch {
         // silent - use defaults

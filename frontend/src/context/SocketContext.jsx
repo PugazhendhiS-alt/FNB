@@ -20,8 +20,10 @@ export function SocketProvider({ children }) {
       return;
     }
 
+    const token = localStorage.getItem('token');
     const newSocket = io(SOCKET_URL, {
       transports: ['websocket', 'polling'],
+      auth: { token },
     });
 
     newSocket.on('connect', () => {

@@ -9,7 +9,7 @@ const ROLES = [
 ];
 
 export default function StaffWidget({ data = {}, loading, onRemove, onRefresh }) {
-  const roles = data?.roles ?? ROLES;
+  const roles = data?.staff_roles ?? ROLES;
   const total = roles.reduce((s, r) => s + r.count, 0);
 
   return (

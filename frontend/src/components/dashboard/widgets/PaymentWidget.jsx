@@ -10,10 +10,10 @@ const METHODS = [
 
 export default function PaymentWidget({ data = {}, loading, onRemove, onRefresh }) {
   const stats = {
-    total: data.total ?? 284500,
-    card: data.card ?? 145000,
-    cash: data.cash ?? 82500,
-    online: data.online ?? 57000,
+    total: data.payments_total ?? 0,
+    card: data.payments_card ?? 0,
+    cash: data.payments_cash ?? 0,
+    online: data.payments_online ?? 0,
   };
 
   return (

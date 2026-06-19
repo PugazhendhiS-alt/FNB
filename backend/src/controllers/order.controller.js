@@ -51,6 +51,20 @@ async function getById(req, res, next) {
       },
     });
     if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+    if (!req.user.isSuperadmin) {
+      if (req.user.role === 'CUSTOMER' && order.customerId !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied.' });
+      }
+      if ((req.user.role === 'RESTAURANT_MANAGER' || req.user.role === 'CHEF') && order.restaurantId !== req.user.restaurantId) {
+        return res.status(403).json({ message: 'Access denied.' });
+      }
+      if (req.user.role === 'BUILDING_MANAGER') {
+        const r = await prisma.restaurant.findUnique({ where: { id: order.restaurantId }, select: { buildingId: true } });
+        if (r && r.buildingId !== req.user.buildingId) return res.status(403).json({ message: 'Access denied.' });
+      }
+    }
+
     res.json(order);
   } catch (err) {
     next(err);
@@ -64,53 +78,57 @@ async function createGuest(req, res, next) {
       return res.status(400).json({ message: 'Restaurant and items are required.' });
     }
 
-    const guestUser = await prisma.user.create({
-      data: {
-        username: `guest_${Date.now()}`,
-        email: guestEmail || `guest_${Date.now()}@pos.local`,
-        password: '',
-        role: 'CUSTOMER',
-        phone: guestPhone || null,
-        isSuperadmin: false,
-      },
+    const result = await prisma.$transaction(async (tx) => {
+      const guestUser = await tx.user.create({
+        data: {
+          username: `guest_${Date.now()}`,
+          email: guestEmail || `guest_${Date.now()}@pos.local`,
+          password: '',
+          role: 'CUSTOMER',
+          phone: guestPhone || null,
+          isSuperadmin: false,
+        },
+      });
+
+      const menuItems = await tx.menuItem.findMany({
+        where: { id: { in: items.map(i => i.menuItemId) }, restaurantId },
+      });
+
+      if (menuItems.length !== items.length) {
+        throw Object.assign(new Error('Some menu items not found or not in this restaurant.'), { status: 400 });
+      }
+
+      const orderItems = items.map(item => {
+        const menuItem = menuItems.find(m => m.id === item.menuItemId);
+        return { menuItemId: item.menuItemId, quantity: item.quantity, unitPrice: menuItem.price };
+      });
+
+      const totalAmount = calculateTotal(orderItems);
+      const orderCode = generateOrderCode();
+
+      const order = await tx.order.create({
+        data: {
+          orderCode,
+          status: 'PENDING_PAYMENT',
+          totalAmount,
+          customerId: guestUser.id,
+          restaurantId,
+          items: { create: orderItems },
+        },
+        include: {
+          restaurant: { select: { id: true, name: true } },
+          items: { include: { menuItem: { select: { id: true, name: true, price: true } } } },
+        },
+      });
+
+      return { order, guestToken: guestUser.id };
     });
 
-    const menuItems = await prisma.menuItem.findMany({
-      where: { id: { in: items.map(i => i.menuItemId) }, restaurantId },
-    });
+    emitOrderUpdate(req.app.get('io'), result.order.id, result.order);
 
-    if (menuItems.length !== items.length) {
-      await prisma.user.delete({ where: { id: guestUser.id } });
-      return res.status(400).json({ message: 'Some menu items not found or not in this restaurant.' });
-    }
-
-    const orderItems = items.map(item => {
-      const menuItem = menuItems.find(m => m.id === item.menuItemId);
-      return { menuItemId: item.menuItemId, quantity: item.quantity, unitPrice: menuItem.price };
-    });
-
-    const totalAmount = calculateTotal(orderItems);
-    const orderCode = generateOrderCode();
-
-    const order = await prisma.order.create({
-      data: {
-        orderCode,
-        status: 'PENDING_PAYMENT',
-        totalAmount,
-        customerId: guestUser.id,
-        restaurantId,
-        items: { create: orderItems },
-      },
-      include: {
-        restaurant: { select: { id: true, name: true } },
-        items: { include: { menuItem: { select: { id: true, name: true, price: true } } } },
-      },
-    });
-
-    emitOrderUpdate(req.app.get('io'), order.id, order);
-
-    res.status(201).json({ order, guestToken: guestUser.id });
+    res.status(201).json(result);
   } catch (err) {
+    if (err.status === 400) return res.status(400).json({ message: err.message });
     next(err);
   }
 }
@@ -191,6 +209,10 @@ async function updateStatus(req, res, next) {
       });
     }
 
+    if (req.user.role === 'CHEF' && status === 'CANCELLED') {
+      return res.status(403).json({ message: 'Chefs cannot cancel orders.' });
+    }
+
     const updated = await prisma.order.update({
       where: { id },
       data: { status },
@@ -241,9 +263,10 @@ async function updateStatus(req, res, next) {
                 const stock = await prisma.inventoryStock.findUnique({ where: { itemId: ing.itemId } });
                 if (stock) {
                   const bal = stock.available - qtyToDeduct;
+                  const qty = stock.quantity - qtyToDeduct;
                   await prisma.inventoryStock.update({
                     where: { itemId: ing.itemId },
-                    data: { quantity: stock.quantity - qtyToDeduct, available: Math.max(0, bal), updatedAt: new Date() },
+                    data: { quantity: Math.max(0, qty), available: Math.max(0, bal), updatedAt: new Date() },
                   });
                   await prisma.inventoryMovement.create({
                     data: {
@@ -285,6 +308,20 @@ async function getByCode(req, res, next) {
       },
     });
     if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+    if (!req.user.isSuperadmin) {
+      if (req.user.role === 'CUSTOMER' && order.customerId !== req.user.id) {
+        return res.status(403).json({ message: 'Access denied.' });
+      }
+      if ((req.user.role === 'RESTAURANT_MANAGER' || req.user.role === 'CHEF') && order.restaurantId !== req.user.restaurantId) {
+        return res.status(403).json({ message: 'Access denied.' });
+      }
+      if (req.user.role === 'BUILDING_MANAGER') {
+        const r = await prisma.restaurant.findUnique({ where: { id: order.restaurantId }, select: { buildingId: true } });
+        if (r && r.buildingId !== req.user.buildingId) return res.status(403).json({ message: 'Access denied.' });
+      }
+    }
+
     res.json(order);
   } catch (err) {
     next(err);

@@ -3,10 +3,10 @@ import { UsersIcon } from '@heroicons/react/24/outline';
 
 export default function CustomerWidget({ data = {}, loading, onRemove, onRefresh }) {
   const stats = {
-    total: data.total ?? 128,
-    active: data.active ?? 89,
-    new: data.new ?? 14,
-    returning: data.returning ?? 62,
+    total: data.customers_total ?? 0,
+    active: data.customers_active ?? 0,
+    new: data.customers_new ?? 0,
+    returning: data.customers_returning ?? 0,
   };
 
   return (

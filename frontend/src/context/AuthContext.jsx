@@ -43,13 +43,15 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
+    let cancelled = false;
     if (token) {
-      withTimeout(authAPI.getProfile(), 10000)
-        .then((res) => {
+      Promise.all([
+        withTimeout(authAPI.getProfile(), 10000).then((res) => {
+          if (cancelled) return;
           setUser(res.data);
           try { localStorage.setItem('user', JSON.stringify(res.data)); } catch {}
-        })
-        .catch(() => {
+        }).catch(() => {
+          if (cancelled) return;
           safeRemoveItem('token');
           safeRemoveItem('user');
           safeRemoveItem('isGuest');
@@ -57,13 +59,14 @@ export function AuthProvider({ children }) {
           setToken(null);
           setUser(null);
           setIsGuest(false);
-        })
-        .finally(() => { if (!loading) setLoading(false); });
-      loadAllowedModules().finally(() => setLoading(false));
+        }),
+        loadAllowedModules(),
+      ]).finally(() => { if (!cancelled) setLoading(false); });
     } else {
       setAllowedModules(null);
       setLoading(false);
     }
+    return () => { cancelled = true; };
   }, [token]);
 
   const login = async (username, password) => {
@@ -109,7 +112,7 @@ export function AuthProvider({ children }) {
     } catch {}
     setToken(res.data.token);
     setUser(res.data.user);
-    setIsGuest(false);
+    setIsGuest(true);
     loadAllowedModules();
     return res.data;
   };

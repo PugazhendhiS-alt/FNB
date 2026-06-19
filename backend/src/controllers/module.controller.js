@@ -91,7 +91,7 @@ async function deleteRestaurantModule(req, res, next) {
 
 async function getMyAccess(req, res, next) {
   try {
-    const allModules = await prisma.module.findMany({ orderBy: { name: 'asc' } });
+    const allModules = await prisma.module.findMany({ where: { isActive: true }, orderBy: { name: 'asc' } });
     if (req.user.isSuperadmin) {
       return res.json(allModules);
     }

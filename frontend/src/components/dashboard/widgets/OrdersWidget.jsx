@@ -11,10 +11,10 @@ const ITEMS = [
 
 export default function OrdersWidget({ data = {}, loading, onRemove, onRefresh }) {
   const stats = {
-    active: data.active ?? 12,
-    completed: data.completed ?? 48,
-    cancelled: data.cancelled ?? 3,
-    aov: data.aov ?? 450,
+    active: data.orders_active ?? 0,
+    completed: data.orders_completed ?? 0,
+    cancelled: data.orders_cancelled ?? 0,
+    aov: data.orders_aov ?? 0,
   };
 
   return (

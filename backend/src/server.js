@@ -27,8 +27,9 @@ const allowedOrigins = process.env.CLIENT_URL
   : undefined;
 
 function corsOrigin(origin, callback) {
-  if (!origin || allowedOrigins) {
-    return callback(null, allowedOrigins || true);
+  if (!origin) return callback(null, true);
+  if (allowedOrigins) {
+    return callback(null, allowedOrigins.includes(origin));
   }
   const allowed = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\..*|10\..*|172\.1[6-9]\..*|172\.2[0-9]\..*|172\.3[0-1]\..*)(:\d+)?$/.test(origin);
   callback(null, allowed);

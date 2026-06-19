@@ -2,12 +2,9 @@ const { PrismaClient } = require('@prisma/client');
 const { generateToken } = require('../utils/jwt');
 const { sendOtpEmail } = require('../utils/mailer');
 const { sendOtpSms } = require('../utils/sms');
+const { generateOtpCode } = require('../utils/helpers');
 
 const prisma = new PrismaClient();
-
-function generateOtpCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
 
 async function sendOtp(req, res, next) {
   try {

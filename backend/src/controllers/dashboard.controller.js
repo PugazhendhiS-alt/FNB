@@ -361,7 +361,7 @@ async function getSectionData(req, res, next) {
     const aov = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
     const completedCount = orderStatusDist.find(s => s.status === 'COMPLETED')?._count?.id || 0;
     const paidOrders = orderStatusDist.find(s => s.status === 'PAID')?._count?.id || 0;
-    const readyCount = completedCount - completedToday;
+    const readyCount = completedCount;
 
     const roleColors = { SUPERADMIN: 'bg-purple-500', BUILDING_MANAGER: 'bg-blue-500', RESTAURANT_MANAGER: 'bg-amber-500', CHEF: 'bg-violet-500', CUSTOMER: 'bg-emerald-500' };
     const roleLabels = { SUPERADMIN: 'Admins', BUILDING_MANAGER: 'Managers', RESTAURANT_MANAGER: 'Managers', CHEF: 'Chefs', CUSTOMER: 'Staff' };

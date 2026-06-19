@@ -1,4 +1,5 @@
 ﻿const { PrismaClient } = require('@prisma/client');
+const { v4: uuidv4 } = require('uuid');
 const { generateQRData } = require('../utils/helpers');
 const { emitOrderUpdate, emitNotification, emitStaffNotification } = require('../socket');
 
@@ -17,6 +18,9 @@ async function processPayment(req, res, next) {
     });
 
     if (!order) return res.status(404).json({ message: 'Order not found.' });
+    if (order.customerId !== req.user.id) {
+      return res.status(403).json({ message: 'You can only pay for your own orders.' });
+    }
     if (order.status !== 'PENDING_PAYMENT') {
       return res.status(400).json({ message: 'Order is not pending payment.' });
     }
@@ -30,7 +34,7 @@ async function processPayment(req, res, next) {
           status: 'PAID',
           paymentStatus: 'SUCCESS',
           paymentMethod: 'UPI',
-          transactionRef: `TXN${Date.now()}`,
+          transactionRef: `TXN${uuidv4().slice(0, 8).toUpperCase()}`,
         },
         include: {
           customer: { select: { id: true, username: true } },
@@ -83,7 +87,7 @@ async function processPayment(req, res, next) {
         data: { status: 'PAYMENT_FAILED', paymentStatus: 'FAILED' },
       });
 
-      emitOrderUpdate(req.app.get('io'), orderId, { id: orderId, status: 'PAYMENT_FAILED' });
+      emitOrderUpdate(req.app.get('io'), orderId, { id: orderId, status: 'PAYMENT_FAILED', restaurantId: order.restaurantId });
 
       res.json({ success: false, message: 'Payment failed. Please try again.' });
     }

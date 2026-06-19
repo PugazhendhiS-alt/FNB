@@ -1,6 +1,16 @@
 ﻿const { Server } = require('socket.io');
+const { verifyToken } = require('../utils/jwt');
 
 function setupSocket(io) {
+  io.use((socket, next) => {
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
+    if (!token) return next(new Error('Authentication required'));
+    const decoded = verifyToken(token);
+    if (!decoded) return next(new Error('Invalid or expired token'));
+    socket.user = decoded;
+    next();
+  });
+
   io.on('connection', (socket) => {
     console.log('Client connected:', socket.id);
 
@@ -9,15 +19,21 @@ function setupSocket(io) {
     });
 
     socket.on('join-restaurant-room', (restaurantId) => {
-      socket.join(`restaurant:${restaurantId}`);
+      if (socket.user.isSuperadmin || socket.user.restaurantId === restaurantId || socket.user.role === 'BUILDING_MANAGER') {
+        socket.join(`restaurant:${restaurantId}`);
+      }
     });
 
     socket.on('join-building-room', (buildingId) => {
-      socket.join(`building:${buildingId}`);
+      if (socket.user.isSuperadmin || socket.user.buildingId === buildingId) {
+        socket.join(`building:${buildingId}`);
+      }
     });
 
     socket.on('join-user-room', (userId) => {
-      socket.join(`user:${userId}`);
+      if (socket.user.id === userId || socket.user.isSuperadmin) {
+        socket.join(`user:${userId}`);
+      }
     });
 
     socket.on('disconnect', () => {

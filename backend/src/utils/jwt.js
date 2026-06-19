@@ -9,6 +9,7 @@ function generateToken(user) {
       username: user.username,
       email: user.email,
       role: user.role,
+      activeRole: user.activeRole || user.role,
       isSuperadmin: user.isSuperadmin,
       buildingId: user.buildingId,
       restaurantId: user.restaurantId,

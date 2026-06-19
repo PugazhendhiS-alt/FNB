@@ -2,13 +2,10 @@
 const { PrismaClient } = require('@prisma/client');
 const { generateToken } = require('../utils/jwt');
 const { sendOtpEmail } = require('../utils/mailer');
+const { generateOtpCode } = require('../utils/helpers');
 const { roles, roleHierarchy } = require('../middleware/roles');
 
 const prisma = new PrismaClient();
-
-function generateOtpCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
 
 async function login(req, res, next) {
   try {
@@ -41,9 +38,12 @@ async function login(req, res, next) {
 
 async function register(req, res, next) {
   try {
-    const { username, email, password, role, phone } = req.body;
+    const { username, email, password, phone } = req.body;
     if (!username || !email || !password) {
       return res.status(400).json({ message: 'Username, email, and password are required.' });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
     }
 
     const existing = await prisma.user.findFirst({
@@ -55,7 +55,7 @@ async function register(req, res, next) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { username, email, password: hashedPassword, role: role || 'CUSTOMER', phone },
+      data: { username, email, password: hashedPassword, role: 'CUSTOMER', phone },
     });
 
     const token = generateToken(user);
@@ -127,6 +127,9 @@ async function getAllUsers(req, res, next) {
 async function createUser(req, res, next) {
   try {
     const { username, email, password, role, phone, avatar, buildingId, restaurantId } = req.body;
+    if (!password || password.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
 
     const requestorLevel = roleHierarchy[req.user.role] || 0;
     const targetLevel = roleHierarchy[role] || 0;
@@ -135,6 +138,15 @@ async function createUser(req, res, next) {
     }
     if (role === 'SUPERADMIN') {
       return res.status(403).json({ message: 'Only existing superadmins can create superadmins.' });
+    }
+
+    if (buildingId) {
+      const building = await prisma.building.findUnique({ where: { id: buildingId } });
+      if (!building) return res.status(400).json({ message: 'Building not found.' });
+    }
+    if (restaurantId) {
+      const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+      if (!restaurant) return res.status(400).json({ message: 'Restaurant not found.' });
     }
 
     const data = { username, email, password: await bcrypt.hash(password, 10), role, phone, avatar };
@@ -185,7 +197,10 @@ async function updateUser(req, res, next) {
     const data = {};
     if (username) data.username = username;
     if (email) data.email = email;
-    if (password) data.password = await bcrypt.hash(password, 10);
+    if (password) {
+      if (password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+      data.password = await bcrypt.hash(password, 10);
+    }
     if (role) data.role = role;
     if (phone !== undefined) data.phone = phone;
     if (avatar !== undefined) data.avatar = avatar;
@@ -232,7 +247,13 @@ async function deleteUser(req, res, next) {
       return res.status(403).json({ message: 'You cannot delete a user with equal or higher role.' });
     }
 
-    await prisma.user.delete({ where: { id } });
+    await prisma.$transaction([
+      prisma.notification.deleteMany({ where: { userId: id } }),
+      prisma.otp.deleteMany({ where: { userId: id } }),
+      prisma.userModule.deleteMany({ where: { userId: id } }),
+      prisma.userWidget.deleteMany({ where: { userId: id } }),
+      prisma.user.delete({ where: { id } }),
+    ]);
     res.json({ message: 'User deleted successfully.' });
   } catch (err) {
     next(err);
@@ -277,6 +298,7 @@ async function changePassword(req, res, next) {
     if (!currentPassword) return res.status(400).json({ message: 'Current password is required.' });
 
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
+    if (!user) return res.status(404).json({ message: 'User not found.' });
     const isValid = await bcrypt.compare(currentPassword, user.password);
     if (!isValid) return res.status(401).json({ message: 'Current password is incorrect.' });
 
@@ -300,9 +322,10 @@ async function changePassword(req, res, next) {
 
 async function verifyPasswordChange(req, res, next) {
   try {
-    const { code, newPassword } = req.body;
+    const { code, newPassword, confirmPassword } = req.body;
     if (!code || !newPassword) return res.status(400).json({ message: 'OTP code and new password are required.' });
     if (newPassword.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    if (newPassword !== confirmPassword) return res.status(400).json({ message: 'Passwords do not match.' });
 
     const otp = await prisma.otp.findFirst({
       where: { userId: req.user.id, code, used: false, type: 'PASSWORD_CHANGE', expiresAt: { gte: new Date() } },
