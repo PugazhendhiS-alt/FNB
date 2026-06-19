@@ -92,10 +92,13 @@ pos-system/
 | Username | Password | Role |
 |----------|----------|------|
 | Superadmin | Admin12345 | Super Admin |
-| bldmgr1 | bldmgr123 | Building Manager |
-| restmgr1 | restmgr123 | Restaurant Manager |
+| bldmgr1 | manager123 | Building Manager |
+| restmgr1 | manager123 | Restaurant Manager |
+| restmgr2 | manager123 | Restaurant Manager |
 | chef1 | chef123 | Chef |
 | customer1 | customer123 | Customer |
+| customer2 | customer123 | Customer |
+| chef2 | customer123 | Chef |
 
 ## Key Tech
 - **Frontend**: React 18, Vite 5, Tailwind CSS 3, Headless UI 2
