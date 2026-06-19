@@ -38,23 +38,13 @@ async function create(req, res, next) {
       return res.status(400).json({ message: 'Name and address are required.' });
     }
     const building = await prisma.building.create({
-      data: { name, address, phone, description, image },
-    });
-
-    if (assignUserIds && assignUserIds.length > 0) {
-      await prisma.user.updateMany({
-        where: { id: { in: assignUserIds } },
-        data: { buildingId: building.id },
-      });
-    }
-
-    const result = await prisma.building.findUnique({
-      where: { id: building.id },
-      include: {
-        _count: { select: { restaurants: true, users: true } },
+      data: {
+        name, address, phone, description, image,
+        ...(assignUserIds?.length ? { users: { connect: assignUserIds.map(id => ({ id })) } } : {}),
       },
+      include: { _count: { select: { restaurants: true, users: true } } },
     });
-    res.status(201).json(result);
+    res.status(201).json(building);
   } catch (err) {
     next(err);
   }
@@ -75,6 +65,7 @@ async function update(req, res, next) {
     const building = await prisma.building.update({
       where: { id },
       data,
+      include: { _count: { select: { restaurants: true, users: true } } },
     });
 
     if (assignUserIds !== undefined) {
@@ -88,13 +79,7 @@ async function update(req, res, next) {
       });
     }
 
-    const result = await prisma.building.findUnique({
-      where: { id },
-      include: {
-        _count: { select: { restaurants: true, users: true } },
-      },
-    });
-    res.json(result);
+    res.json(building);
   } catch (err) {
     next(err);
   }

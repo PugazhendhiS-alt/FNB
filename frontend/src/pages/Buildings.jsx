@@ -76,9 +76,9 @@ export default function Buildings() {
 
   const toggleActive = async (building) => {
     try {
-      await buildingAPI.update(building.id, { isActive: !building.isActive });
+      const res = await buildingAPI.update(building.id, { isActive: !building.isActive });
+      setBuildings(prev => prev.map(b => b.id === building.id ? { ...b, ...res.data } : b));
       toast.success(building.isActive ? 'Building deactivated' : 'Building activated');
-      fetchBuildings();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to toggle status');
     }
@@ -96,14 +96,15 @@ export default function Buildings() {
     try {
       const payload = { ...form, assignUserIds: assignedUsers };
       if (editing) {
-        await buildingAPI.update(editing.id, payload);
+        const res = await buildingAPI.update(editing.id, payload);
+        setBuildings(prev => prev.map(b => b.id === editing.id ? { ...b, ...res.data } : b));
         toast.success('Building updated');
       } else {
-        await buildingAPI.create(payload);
+        const res = await buildingAPI.create(payload);
+        setBuildings(prev => [res.data, ...prev]);
         toast.success('Building created');
       }
       setModalOpen(false);
-      fetchBuildings();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Operation failed');
     }
@@ -113,8 +114,8 @@ export default function Buildings() {
     if (!confirm('Are you sure you want to delete this building?')) return;
     try {
       await buildingAPI.delete(id);
+      setBuildings(prev => prev.filter(b => b.id !== id));
       toast.success('Building deleted');
-      fetchBuildings();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Delete failed');
     }
