@@ -64,7 +64,7 @@ export default function Login() {
       else delete errs.mobile;
     }
     setErrors(errs);
-    return Object.keys(errs).length === 0;
+    return field ? !errs[field] : Object.keys(errs).length === 0;
   }
 
   function handleBlur(field) {
@@ -85,7 +85,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setTouched({ username: true, password: true });
-    const valid = validate();
+    const valid = validate('username') && validate('password');
     if (!valid) return;
     setLoading(true);
     try {
