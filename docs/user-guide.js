@@ -650,7 +650,7 @@ drawTable(['Term', 'Definition'], [
   ['PO', 'Purchase Order \u2014 a commercial document issued by a buyer to a seller'],
   ['POS', 'Point of Sale \u2014 the place where a retail transaction is completed'],
   ['RBAC', 'Role-Based Access Control \u2014 an approach to restricting system access to authorised users'],
-  ['SKU', 'Stock Keeping Unit \u2014 a unique identifier for each product or item in inventory'],
+  ['Stock Keeping Unit (SKU)', 'Stock Keeping Unit \u2014 a unique identifier for each product or item in inventory'],
   ['SPA', 'Single-Page Application \u2014 a web application that loads a single HTML page and dynamically updates content'],
   ['UAT', 'User Acceptance Testing \u2014 the final phase of testing before system deployment'],
 ], [60, W - 70]);

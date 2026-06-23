@@ -506,7 +506,7 @@ drawTable(['Term', 'Definition'], [
   ['POS', 'Point of Sale \u2014 place where a retail transaction is completed'],
   ['RBAC', 'Role-Based Access Control \u2014 restricting system access to authorised users'],
   ['SIT', 'System Integration Testing \u2014 testing phase verifying system component interactions'],
-  ['SKU', 'Stock Keeping Unit \u2014 unique identifier for each product or item in inventory'],
+  ['Stock Keeping Unit (SKU)', 'Stock Keeping Unit \u2014 unique identifier for each product or item in inventory'],
   ['SPA', 'Single-Page Application \u2014 web app that loads one HTML page and dynamically updates'],
   ['UAT', 'User Acceptance Testing \u2014 final testing phase before deployment'],
 ], [60, W - 70]);

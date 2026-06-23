@@ -134,6 +134,20 @@ async function main() {
   }
   console.log('Default modules created');
 
+  const offers = [
+    { title: 'Welcome 20% Off', description: 'Get 20% off on your first order', code: 'WELCOME20', discountPct: 20, minOrderAmt: 199, maxDiscount: 100, expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+    { title: 'Free Delivery', description: 'Free delivery on orders above ₹299', code: 'FREEDEL', discountAmt: 40, minOrderAmt: 299, expiresAt: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000) },
+    { title: 'Weekend Special', description: 'Flat ₹50 off on all orders this weekend', code: 'WEEKEND50', discountAmt: 50, minOrderAmt: 0, maxDiscount: 50, expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
+    { title: 'Lunch Combo Deal', description: 'Buy any main course, get a beverage free', code: 'LUNCHCOMBO', discountAmt: 49, minOrderAmt: 200, expiresAt: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000) },
+  ];
+  for (const offer of offers) {
+    const existing = await prisma.offer.findFirst({ where: { code: offer.code } });
+    if (!existing) {
+      await prisma.offer.create({ data: { id: uuidv4(), ...offer, isActive: true } });
+    }
+  }
+  console.log('Offers created');
+
   console.log('Seed completed successfully!');
   console.log('Superadmin created: username=Superadmin, password=Admin12345');
   console.log('Sample users created with passwords: admin123, manager123, chef123, customer123');

@@ -18,6 +18,7 @@ const foodCardRoutes = require('./routes/foodcard.routes');
 const inventoryRoutes = require('./routes/inventory.routes');
 const moduleRoutes = require('./routes/module.routes');
 const notificationRoutes = require('./routes/notification.routes');
+const customerRoutes = require('./routes/customer.routes');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -71,6 +72,7 @@ app.use('/api/food-card', foodCardRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/modules', moduleRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/customer', customerRoutes);
 
 app.use(errorHandler);
 

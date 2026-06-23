@@ -45,6 +45,10 @@ function setupSocket(io) {
 function emitOrderUpdate(io, orderId, data) {
   io.to(`order:${orderId}`).emit('order-updated', data);
   io.to(`restaurant:${data.restaurantId}`).emit('order-updated', data);
+  if (data.customerId) {
+    io.to(`user:${data.customerId}`).emit('order-status-changed', data);
+    io.to(`user:${data.customerId}`).emit('order-updated', data);
+  }
 }
 
 function emitNotification(io, userId, notification) {

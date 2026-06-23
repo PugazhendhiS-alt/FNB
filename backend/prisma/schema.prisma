@@ -645,3 +645,21 @@ model UserModule {
   @@index([userId])
   @@index([moduleId])
 }
+
+model Offer {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  code        String?
+  discountPct Float     @default(0)
+  discountAmt Float     @default(0)
+  minOrderAmt Float     @default(0)
+  maxDiscount Float?
+  isActive    Boolean   @default(true)
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([code])
+}

@@ -134,6 +134,12 @@ export const notificationAPI = {
   markAllRead: () => client.patch('/notifications/read-all'),
 };
 
+export const customerAPI = {
+  getDashboard: () => client.get('/customer/dashboard'),
+  getRecommendations: () => client.get('/customer/recommendations'),
+  getOffers: () => client.get('/customer/offers'),
+};
+
 export const moduleAPI = {
   getAll: () => client.get('/modules'),
   getMyAccess: () => client.get('/modules/my-access'),

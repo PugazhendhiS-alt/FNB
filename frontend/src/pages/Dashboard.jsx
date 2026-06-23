@@ -7,6 +7,7 @@ import KPIGrid from '../components/dashboard/KPIGrid';
 import QuickActionsBar from '../components/dashboard/QuickActionsBar';
 import DashboardContent from '../components/dashboard/DashboardWidgetSections';
 import DashboardFilters, { FilterToggleButton } from '../components/dashboard/DashboardFilters';
+import CustomerDashboard from './CustomerDashboard';
 import ErrorBoundary from '../components/ErrorBoundary';
 import { widgetAPI, dashboardAPI } from '../api/endpoints';
 import { ChartBarIcon } from '@heroicons/react/24/outline';
@@ -92,29 +93,7 @@ export default function Dashboard() {
   }, []);
 
   if (isCustomer) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 text-white shadow-md shadow-primary-500/10">
-              <ChartBarIcon className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">My Dashboard</h1>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Welcome back</p>
-            </div>
-          </div>
-          <button
-            onClick={() => navigate('/restaurants')}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-600 text-white text-sm font-medium hover:bg-primary-700 active:bg-primary-800 transition-colors shadow-sm"
-          >
-            <ChartBarIcon className="w-4 h-4" />
-            <span className="hidden sm:inline">View Menus</span>
-          </button>
-        </div>
-        <DashboardContent data={sectionData} />
-      </div>
-    );
+    return <CustomerDashboard />;
   }
 
   return (

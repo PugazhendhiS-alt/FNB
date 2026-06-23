@@ -210,7 +210,7 @@ function ItemsSection({ items, categories, vendors, canEdit, onRefresh }) {
       <Card className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead><tr className="border-b border-gray-200 dark:border-gray-700 text-left text-gray-500">
-            <th className="p-3 font-medium">Name</th><th className="p-3 font-medium">SKU</th><th className="p-3 font-medium">Category</th>
+            <th className="p-3 font-medium">Name</th><th className="p-3 font-medium">Stock Keeping Unit</th><th className="p-3 font-medium">Category</th>
             <th className="p-3 font-medium">Stock</th><th className="p-3 font-medium">Cost</th><th className="p-3 font-medium">Reorder</th>
             <th className="p-3 font-medium">Status</th><th className="p-3 font-medium">Actions</th>
           </tr></thead>
@@ -245,7 +245,7 @@ function ItemsSection({ items, categories, vendors, canEdit, onRefresh }) {
         <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto">
           <div className="grid grid-cols-2 gap-4">
             <Input label="Name *" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
-            <Input label="SKU *" value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} />
+            <Input label="Stock Keeping Unit *" value={form.sku} onChange={e => setForm({ ...form, sku: e.target.value })} />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div><label className="block text-sm font-medium mb-1">Category</label>
