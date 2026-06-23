@@ -13,4 +13,4 @@ RUN npx prisma generate
 COPY . .
 
 EXPOSE 8080
-CMD ["sh", "-c", "npx prisma db push && node prisma/seed.js && node src/server.js"]
+CMD ["sh", "-c", "(npx prisma db push && node prisma/seed.js) & node src/server.js"]
