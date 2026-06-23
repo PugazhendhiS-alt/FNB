@@ -29,6 +29,14 @@ Full-stack Point-of-Sale system with React frontend, Node.js/Express backend, Po
 | `VITE_API_URL` | `https://mvp-fnb.up.railway.app/api` |
 | `VITE_SOCKET_URL` | `https://mvp-fnb.up.railway.app` |
 
+### Deployment Flow
+1. **Build**: Docker image built from `Dockerfile` — `npm ci`, `prisma generate`
+2. **Start**: Container runs `(npx prisma db push && node prisma/seed.js) & node src/server.js`
+   - Schema push + seed run in **background** (non-blocking)
+   - Server starts **immediately** so Railway health check passes
+   - Seed populates demo users while server is already accepting requests
+3. **No `preDeployCommand` or `startCommand`** in railway.json — Dockerfile CMD is used directly
+
 ### Service Configuration
 | Service | Root Dir | Target Port |
 |---------|----------|-------------|
