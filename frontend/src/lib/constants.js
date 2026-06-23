@@ -116,43 +116,73 @@ export const MODULE_PATH_MAP = {
 
 export const SIDEBAR_LINKS = {
   SUPERADMIN: [
-    { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
-    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
-    { path: '/users', label: 'Users', icon: 'UsersIcon' },
-    { path: '/buildings', label: 'Buildings', icon: 'BuildingOffice2Icon' },
-    { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
-    { path: '/menu', label: 'Menu Items', icon: 'RectangleStackIcon' },
-    { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },
-    { path: '/modules', label: 'Modules', icon: 'PuzzlePieceIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
+    { type: 'single', path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    {
+      type: 'group', title: 'Order Management', icon: 'ShoppingBagIcon',
+      children: [
+        { path: '/orders', label: 'Orders' },
+        { path: '/delivery-confirmation', label: 'Confirm Delivery' },
+      ],
+    },
+    {
+      type: 'group', title: 'Operations', icon: 'CubeIcon',
+      children: [
+        { path: '/inventory', label: 'Inventory' },
+        { path: '/menu', label: 'Menu Items' },
+        { path: '/restaurants', label: 'Restaurants' },
+      ],
+    },
+    {
+      type: 'group', title: 'Administration', icon: 'BuildingOffice2Icon',
+      children: [
+        { path: '/buildings', label: 'Buildings' },
+        { path: '/users', label: 'Users' },
+        { path: '/modules', label: 'Modules' },
+      ],
+    },
+    { type: 'single', path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   BUILDING_MANAGER: [
-    { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/users', label: 'Users', icon: 'UsersIcon' },
-    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
-    { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
+    { type: 'single', path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    {
+      type: 'group', title: 'Operations', icon: 'CubeIcon',
+      children: [
+        { path: '/inventory', label: 'Inventory' },
+        { path: '/restaurants', label: 'Restaurants' },
+      ],
+    },
+    { type: 'single', path: '/users', label: 'Users', icon: 'UsersIcon' },
+    { type: 'single', path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   RESTAURANT_MANAGER: [
-    { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
-    { path: '/users', label: 'Users', icon: 'UsersIcon' },
-    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
-    { path: '/menu', label: 'Menu', icon: 'RectangleStackIcon' },
-    { path: '/delivery-confirmation', label: 'Confirm Delivery', icon: 'TruckIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
+    { type: 'single', path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    {
+      type: 'group', title: 'Order Management', icon: 'ShoppingBagIcon',
+      children: [
+        { path: '/orders', label: 'Orders' },
+        { path: '/delivery-confirmation', label: 'Confirm Delivery' },
+      ],
+    },
+    {
+      type: 'group', title: 'Operations', icon: 'CubeIcon',
+      children: [
+        { path: '/inventory', label: 'Inventory' },
+        { path: '/menu', label: 'Menu' },
+      ],
+    },
+    { type: 'single', path: '/users', label: 'Users', icon: 'UsersIcon' },
+    { type: 'single', path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   CHEF: [
-    { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
-    { path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
+    { type: 'single', path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    { type: 'single', path: '/orders', label: 'Orders', icon: 'ShoppingBagIcon' },
+    { type: 'single', path: '/inventory', label: 'Inventory', icon: 'CubeIcon' },
+    { type: 'single', path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
   CUSTOMER: [
-    { path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
-    { path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
-    { path: '/orders', label: 'My Orders', icon: 'ShoppingBagIcon' },
-    { path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
+    { type: 'single', path: '/', label: 'Dashboard', icon: 'ChartBarIcon' },
+    { type: 'single', path: '/restaurants', label: 'Restaurants', icon: 'HomeModernIcon' },
+    { type: 'single', path: '/orders', label: 'My Orders', icon: 'ShoppingBagIcon' },
+    { type: 'single', path: '/profile', label: 'Profile', icon: 'UserCircleIcon' },
   ],
 };

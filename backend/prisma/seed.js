@@ -50,7 +50,9 @@ async function main() {
     { username: 'restmgr1', email: 'restmgr@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant1.id },
     { username: 'restmgr2', email: 'restmgr2@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant2.id },
     { username: 'chef1', email: 'chef@pos.com', password: chefPassword, role: 'CHEF', restaurantId: restaurant1.id },
+    { username: 'chef2', email: 'chef2@pos.com', password: chefPassword, role: 'CHEF', restaurantId: restaurant3.id },
     { username: 'customer1', email: 'customer@pos.com', password: customerPassword, role: 'CUSTOMER' },
+    { username: 'customer2', email: 'customer2@pos.com', password: customerPassword, role: 'CUSTOMER' },
   ];
 
   for (const user of users) {
@@ -84,7 +86,7 @@ async function main() {
   }
 
   // Create Food Cards for existing users
-  const foodCardUsers = ['customer1', 'customer2', 'customer3'].filter(Boolean);
+  const foodCardUsers = ['customer1', 'customer2'];
   const allUsers = await prisma.user.findMany();
   const cardPin = await bcrypt.hash('1234', 10);
 
@@ -151,6 +153,8 @@ async function main() {
   console.log('Seed completed successfully!');
   console.log('Superadmin created: username=Superadmin, password=Admin12345');
   console.log('Sample users created with passwords: admin123, manager123, chef123, customer123');
+  console.log('Customers (customer1, customer2) created with password: customer123');
+  console.log('Chefs (chef1, chef2) created with password: chef123');
   console.log('Food Cards created for customers with PIN: 1234');
 }
 

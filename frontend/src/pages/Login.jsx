@@ -31,24 +31,66 @@ export default function Login() {
   const [otpSent, setOtpSent] = useState(false);
   const [, setOtpCode] = useState('');
   const [isEmail, setIsEmail] = useState(true);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
   const otpRefs = useRef([]);
 
   const { login, sendOtp, verifyOtp, guestLogin } = useAuth();
   const navigate = useNavigate();
 
+  function validate(field) {
+    const errs = { ...errors };
+    if (!field || field === 'username') {
+      if (!username.trim()) errs.username = 'Username is required';
+      else delete errs.username;
+    }
+    if (!field || field === 'password') {
+      if (!password) errs.password = 'Password is required';
+      else if (password.length < 6) errs.password = 'Password must be at least 6 characters';
+      else delete errs.password;
+    }
+    if (!field || field === 'email') {
+      if (!email.trim()) errs.email = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = 'Enter a valid email address';
+      else delete errs.email;
+    }
+    if (!field || field === 'mobile') {
+      if (!mobile.trim()) errs.mobile = 'Phone number is required';
+      else if (mobile.length < 10) errs.mobile = 'Enter a valid 10-digit phone number';
+      else delete errs.mobile;
+    }
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
+  function handleBlur(field) {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    validate(field);
+  }
+
+  function handleUsernameChange(val) {
+    setUsername(val);
+    if (touched.username) validate('username');
+  }
+
+  function handlePasswordChange(val) {
+    setPassword(val);
+    if (touched.password) validate('password');
+  }
+
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!username || !password) {
-      toast.error('Please fill in all fields');
-      return;
-    }
+    setTouched({ username: true, password: true });
+    const valid = validate();
+    if (!valid) return;
     setLoading(true);
     try {
-      await login(username, password);
+      await login(username.trim(), password);
       toast.success('Welcome back!');
       navigate('/');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      const msg = err.response?.data?.message || 'Login failed';
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -210,17 +252,24 @@ export default function Login() {
           </div>
 
           {activeTab === 'password' ? (
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={handleLogin} className="space-y-4" noValidate>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Username</label>
                 <input
                   type="text"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="input-field"
+                  onChange={(e) => handleUsernameChange(e.target.value)}
+                  onBlur={() => handleBlur('username')}
+                  className={`input-field ${errors.username && touched.username ? 'border-red-400 dark:border-red-500 focus:ring-red-400' : ''}`}
                   placeholder="Enter your username"
                   autoFocus
                 />
+                {errors.username && touched.username && (
+                  <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+                    {errors.username}
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Password</label>
@@ -228,8 +277,9 @@ export default function Login() {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="input-field pr-10"
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    onBlur={() => handleBlur('password')}
+                    className={`input-field pr-10 ${errors.password && touched.password ? 'border-red-400 dark:border-red-500 focus:ring-red-400' : ''}`}
                     placeholder="Enter your password"
                   />
                   <button
@@ -250,6 +300,12 @@ export default function Login() {
                     )}
                   </button>
                 </div>
+                {errors.password && touched.password && (
+                  <p className="mt-1 text-xs text-red-500 flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
+                    {errors.password}
+                  </p>
+                )}
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full">
                 {loading ? 'Signing in...' : 'Sign in'}
@@ -433,7 +489,8 @@ export default function Login() {
               <p className="text-xs text-gray-400"><span className="font-mono">bldmgr1</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Building Manager</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">restmgr1</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Restaurant Manager</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">restmgr2</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Restaurant Manager</span></p>
-              <p className="text-xs text-gray-400"><span className="font-mono">chef1</span> / <span className="font-mono">chef123</span> <span className="text-gray-500">— Chef</span></p>
+              <p className="text-xs text-gray-400"><span className="font-mono">chef1</span> / <span className="font-mono">chef123</span> <span className="text-gray-500">— Chef (Restaurant 1)</span></p>
+              <p className="text-xs text-gray-400"><span className="font-mono">chef2</span> / <span className="font-mono">chef123</span> <span className="text-gray-500">— Chef (Restaurant 2)</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">customer1</span> / <span className="font-mono">customer123</span> <span className="text-gray-500">— Customer</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">customer2</span> / <span className="font-mono">customer123</span> <span className="text-gray-500">— Customer</span></p>
             </div>
