@@ -1,8 +1,11 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET;
-if (!JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required.');
+function getSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET environment variable is required.');
+  }
+  return secret;
 }
 
 function generateToken(user) {
@@ -17,14 +20,14 @@ function generateToken(user) {
       buildingId: user.buildingId,
       restaurantId: user.restaurantId,
     },
-    JWT_SECRET,
+    getSecret(),
     { expiresIn: '7d' }
   );
 }
 
 function verifyToken(token) {
   try {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, getSecret());
   } catch {
     return null;
   }
