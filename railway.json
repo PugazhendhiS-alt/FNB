@@ -5,9 +5,10 @@
     "dockerfilePath": "./backend/Dockerfile"
   },
   "deploy": {
-    "startCommand": "npx prisma db push && node src/server.js",
+    "preDeployCommand": ["npx prisma db push"],
+    "startCommand": "node src/server.js",
     "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 100,
+    "healthcheckTimeout": 300,
     "restartPolicyType": "on_failure"
   }
 }

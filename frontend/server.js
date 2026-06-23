@@ -58,6 +58,6 @@ http.createServer((req, res) => {
     setHeaders(200, { 'Content-Type': contentType });
     res.end(data);
   });
-}).listen(PORT, () => {
+}).listen(PORT, '0.0.0.0', () => {
   console.log(`Frontend serving on port ${PORT}`);
 });
