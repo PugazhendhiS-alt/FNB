@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { WalletIcon, PlusIcon, ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/24/outline';
 
-export default function WalletCard({ wallet, loading, onTopUp }) {
+function WalletCard({ wallet, loading, onTopUp }) {
   const [showTopUp, setShowTopUp] = useState(false);
   const [amount, setAmount] = useState('');
 
@@ -99,3 +99,7 @@ export default function WalletCard({ wallet, loading, onTopUp }) {
     </div>
   );
 }
+
+export default memo(WalletCard, (prev, next) =>
+  prev.loading === next.loading && prev.wallet?.balance === next.wallet?.balance
+);

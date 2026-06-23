@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ChartBarIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 import { customerAPI, foodCardAPI } from '../api/endpoints';
@@ -13,37 +13,52 @@ import OrderHistory from '../components/customer/OrderHistory';
 import NotificationsCenter from '../components/customer/NotificationsCenter';
 import { useAuth } from '../context/AuthContext';
 
+let cachedData = null;
+
 export default function CustomerDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { notifications, markAsRead } = useSocket();
-
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { socket, notifications } = useSocket();
+  const [data, setData] = useState(cachedData);
+  const [loading, setLoading] = useState(!cachedData);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const fetchedRef = useRef(false);
 
   const loadDashboard = useCallback(async (isRefresh) => {
     if (isRefresh) setRefreshing(true);
-    else setLoading(true);
+    else if (!cachedData) setLoading(true);
     setError(null);
     try {
       const res = await customerAPI.getDashboard();
+      cachedData = res.data;
       setData(res.data);
     } catch (err) {
-      setError('Failed to load dashboard. Pull to refresh.');
+      if (!cachedData) setError('Failed to load dashboard.');
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, []);
 
-  useEffect(() => { loadDashboard(false); }, [loadDashboard]);
+  useEffect(() => {
+    if (!cachedData && !fetchedRef.current) {
+      fetchedRef.current = true;
+      loadDashboard(false);
+    }
+  }, [loadDashboard]);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handler = () => { loadDashboard(true); };
+    socket.on('order-status-changed', handler);
+    return () => socket.off('order-status-changed', handler);
+  }, [socket, loadDashboard]);
 
   const handleTopUp = async (amount) => {
     try {
       await foodCardAPI.topUp({ amount });
-      await loadDashboard(true);
+      loadDashboard(true);
     } catch (err) {
       alert('Top-up failed. Please try again.');
     }

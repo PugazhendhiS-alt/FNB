@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { BellIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { useSocket } from '../../context/SocketContext';
 
@@ -18,7 +19,7 @@ const TYPE_STYLES = {
   PROMOTIONAL: 'bg-purple-50 text-purple-500 dark:bg-purple-900/20 dark:text-purple-400',
 };
 
-export default function NotificationsCenter({ onViewAll }) {
+function NotificationsCenter({ onViewAll }) {
   const { notifications, markAsRead, markAllAsRead } = useSocket();
   const unread = notifications?.filter(n => !n.read) || [];
 
@@ -99,3 +100,5 @@ export default function NotificationsCenter({ onViewAll }) {
     </div>
   );
 }
+
+export default memo(NotificationsCenter);

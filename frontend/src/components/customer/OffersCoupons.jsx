@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { TagIcon, ClockIcon } from '@heroicons/react/24/outline';
 
 function getTimeRemaining(expiresAt) {
@@ -11,7 +11,7 @@ function getTimeRemaining(expiresAt) {
   return `${Math.floor(diff / (1000 * 60 * 60))}h`;
 }
 
-export default function OffersCoupons({ offers, loading }) {
+function OffersCoupons({ offers, loading }) {
   const [copied, setCopied] = useState(null);
 
   const handleCopyCode = (code) => {
@@ -87,3 +87,7 @@ export default function OffersCoupons({ offers, loading }) {
     </div>
   );
 }
+
+export default memo(OffersCoupons, (prev, next) =>
+  prev.loading === next.loading && prev.offers?.length === next.offers?.length
+);

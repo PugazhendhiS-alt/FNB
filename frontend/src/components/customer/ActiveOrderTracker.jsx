@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClockIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { useSocket } from '../../context/SocketContext';
@@ -11,7 +11,7 @@ function getStepIndex(status) {
   return idx >= 0 ? idx : -1;
 }
 
-export default function ActiveOrderTracker({ order, loading }) {
+function ActiveOrderTracker({ order, loading }) {
   const { socket } = useSocket();
   const navigate = useNavigate();
   const [currentStatus, setCurrentStatus] = useState(order?.status);
@@ -122,3 +122,7 @@ export default function ActiveOrderTracker({ order, loading }) {
     </div>
   );
 }
+
+export default memo(ActiveOrderTracker, (prev, next) =>
+  prev.loading === next.loading && prev.order?.status === next.order?.status && prev.order?.id === next.order?.id
+);

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ClockIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
@@ -19,7 +20,7 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-export default function OrderHistory({ orders, loading, onReorder }) {
+function OrderHistory({ orders, loading, onReorder }) {
   const navigate = useNavigate();
 
   if (loading) {
@@ -103,3 +104,7 @@ export default function OrderHistory({ orders, loading, onReorder }) {
     </div>
   );
 }
+
+export default memo(OrderHistory, (prev, next) =>
+  prev.loading === next.loading && prev.orders?.length === next.orders?.length
+);

@@ -1,97 +1,119 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
-function getStatusSortWeight(status) {
-  const order = ['PAID', 'PREPARING', 'READY', 'COMPLETED', 'DELIVERED', 'CONFIRMED'];
-  const idx = order.indexOf(status);
-  return idx >= 0 ? idx : 99;
-}
-
 async function getDashboard(req, res) {
   try {
     const userId = req.user.id;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      include: { foodCard: { include: { transactions: { orderBy: { createdAt: 'desc' }, take: 5 } } } },
-    });
 
-    const activeOrder = await prisma.order.findFirst({
-      where: { customerId: userId, status: { in: ['PAID', 'PREPARING', 'READY', 'CONFIRMED'] } },
-      orderBy: { createdAt: 'desc' },
-      include: {
-        items: { include: { menuItem: true } },
-        restaurant: true,
-      },
-    });
+    const [
+      user,
+      activeOrder,
+      recentOrders,
+      orderHistory,
+      userOrderItems,
+      offers,
+      unreadNotifications,
+    ] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          foodCard: {
+            select: {
+              balance: true,
+              cardNumber: true,
+              isActive: true,
+              transactions: { orderBy: { createdAt: 'desc' }, take: 5 },
+            },
+          },
+        },
+      }),
+      prisma.order.findFirst({
+        where: { customerId: userId, status: { in: ['PAID', 'PREPARING', 'READY', 'CONFIRMED'] } },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true, orderCode: true, status: true, totalAmount: true, createdAt: true,
+          restaurant: { select: { id: true, name: true } },
+          items: { select: { quantity: true, unitPrice: true, menuItem: { select: { id: true, name: true, price: true } } } },
+        },
+      }),
+      prisma.order.findMany({
+        where: { customerId: userId, status: { in: ['COMPLETED', 'DELIVERED'] } },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        select: {
+          id: true, orderCode: true, status: true, totalAmount: true, createdAt: true,
+          restaurant: { select: { id: true, name: true } },
+          items: { select: { quantity: true, unitPrice: true, menuItem: { select: { id: true, name: true } } } },
+        },
+      }),
+      prisma.order.findMany({
+        where: { customerId: userId },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: {
+          id: true, orderCode: true, status: true, totalAmount: true, createdAt: true,
+          restaurant: { select: { id: true, name: true } },
+          items: { select: { quantity: true, unitPrice: true, menuItem: { select: { id: true, name: true } } } },
+        },
+      }),
+      prisma.orderItem.findMany({
+        where: { order: { customerId: userId } },
+        select: {
+          quantity: true,
+          menuItem: {
+            select: {
+              id: true, name: true, price: true, foodCategory: true, restaurantId: true,
+              restaurant: { select: { id: true, name: true, cuisine: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.offer.findMany({
+        where: { isActive: true },
+        select: { id: true, title: true, description: true, code: true, discountPct: true, discountAmt: true, minOrderAmt: true, expiresAt: true },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.notification.findMany({
+        where: { userId, read: false },
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+        select: { id: true, message: true, type: true, createdAt: true },
+      }),
+    ]);
 
-    const recentOrders = await prisma.order.findMany({
-      where: { customerId: userId, status: { in: ['COMPLETED', 'DELIVERED'] } },
-      orderBy: { createdAt: 'desc' },
-      take: 3,
-      include: {
-        items: { include: { menuItem: true } },
-        restaurant: true,
-      },
-    });
-
-    const orderHistory = await prisma.order.findMany({
-      where: { customerId: userId },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-      include: {
-        items: { include: { menuItem: true } },
-        restaurant: true,
-      },
-    });
-
-    const userOrderItems = await prisma.orderItem.findMany({
-      where: { order: { customerId: userId } },
-      include: { menuItem: { include: { restaurant: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const itemFrequency = {};
-    const restaurantFrequency = {};
+    const itemFreq = {};
+    const restaurantFreq = {};
+    const restaurantIds = new Set();
     userOrderItems.forEach(oi => {
-      const mid = oi.menuItemId;
-      itemFrequency[mid] = itemFrequency[mid] || { count: 0, item: oi.menuItem };
-      itemFrequency[mid].count += oi.quantity;
-      const rid = oi.menuItem.restaurantId;
-      restaurantFrequency[rid] = restaurantFrequency[rid] || { count: 0, restaurant: oi.menuItem.restaurant };
-      restaurantFrequency[rid].count += 1;
+      const m = oi.menuItem;
+      itemFreq[m.id] = itemFreq[m.id] || { count: 0, item: m };
+      itemFreq[m.id].count += oi.quantity;
+      restaurantFreq[m.restaurantId] = restaurantFreq[m.restaurantId] || { count: 0, restaurant: m.restaurant };
+      restaurantFreq[m.restaurantId].count += 1;
+      restaurantIds.add(m.restaurantId);
     });
 
-    const favoriteItems = Object.values(itemFrequency)
+    const favoriteItems = Object.values(itemFreq)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
       .map(f => f.item);
 
-    const favoriteRestaurants = Object.values(restaurantFrequency)
+    const favoriteRestaurants = Object.values(restaurantFreq)
       .sort((a, b) => b.count - a.count)
       .slice(0, 5)
       .map(f => f.restaurant);
 
-    const restaurantIds = [...new Set(userOrderItems.map(oi => oi.menuItem.restaurantId))];
+    const rIds = [...restaurantIds];
 
-    const trendingItems = await prisma.menuItem.findMany({
-      where: {
-        restaurantId: { in: restaurantIds.length > 0 ? restaurantIds : undefined },
-        available: true,
-      },
-      take: 6,
-      orderBy: { updatedAt: 'desc' },
-    });
-
-    const offers = await prisma.offer.findMany({
-      where: { isActive: true },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const unreadNotifications = await prisma.notification.findMany({
-      where: { userId, read: false },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    });
+    const trendingItems = rIds.length > 0
+      ? await prisma.menuItem.findMany({
+          where: { restaurantId: { in: rIds }, available: true },
+          take: 6,
+          orderBy: { updatedAt: 'desc' },
+          select: { id: true, name: true, price: true, foodCategory: true, restaurantId: true, available: true },
+        })
+      : [];
 
     res.json({
       activeOrder,
@@ -102,15 +124,9 @@ async function getDashboard(req, res) {
         recentTransactions: user.foodCard.transactions,
       } : null,
       recentOrders,
-      recommendations: {
-        favoriteItems,
-        trendingItems,
-      },
+      recommendations: { favoriteItems, trendingItems },
       offers,
-      favorites: {
-        restaurants: favoriteRestaurants,
-        items: favoriteItems,
-      },
+      favorites: { restaurants: favoriteRestaurants, items: favoriteItems },
       orderHistory,
       unreadNotifications,
     });
@@ -123,21 +139,19 @@ async function getDashboard(req, res) {
 async function getRecommendations(req, res) {
   try {
     const userId = req.user.id;
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { buildingId: true },
-    });
-
-    const orderItems = await prisma.orderItem.findMany({
-      where: { order: { customerId: userId } },
-      include: { menuItem: true },
-      orderBy: { createdAt: 'desc' },
-    });
+    const [orderItems] = await Promise.all([
+      prisma.orderItem.findMany({
+        where: { order: { customerId: userId } },
+        select: { quantity: true, menuItem: { select: { id: true, name: true, price: true, foodCategory: true, restaurantId: true } } },
+        orderBy: { createdAt: 'desc' },
+      }),
+    ]);
 
     const freq = {};
     orderItems.forEach(oi => {
-      freq[oi.menuItemId] = freq[oi.menuItemId] || { count: 0, item: oi.menuItem };
-      freq[oi.menuItemId].count += oi.quantity;
+      const m = oi.menuItem;
+      freq[m.id] = freq[m.id] || { count: 0, item: m };
+      freq[m.id].count += oi.quantity;
     });
 
     const favoriteItems = Object.values(freq)
@@ -149,6 +163,7 @@ async function getRecommendations(req, res) {
       where: { available: true },
       take: 6,
       orderBy: { updatedAt: 'desc' },
+      select: { id: true, name: true, price: true, foodCategory: true, restaurantId: true },
     });
 
     res.json({ favoriteItems, trendingItems });
@@ -162,6 +177,7 @@ async function getOffers(req, res) {
   try {
     const offers = await prisma.offer.findMany({
       where: { isActive: true },
+      select: { id: true, title: true, description: true, code: true, discountPct: true, discountAmt: true, minOrderAmt: true, expiresAt: true },
       orderBy: { createdAt: 'desc' },
     });
     res.json(offers);

@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 
-export default function RecommendedItems({ items = [], favorites = [], loading }) {
+function RecommendedItems({ items = [], favorites = [], loading }) {
   const navigate = useNavigate();
 
   if (loading) {
@@ -57,3 +58,7 @@ export default function RecommendedItems({ items = [], favorites = [], loading }
     </div>
   );
 }
+
+export default memo(RecommendedItems, (prev, next) =>
+  prev.loading === next.loading && prev.favorites?.length === next.favorites?.length
+);

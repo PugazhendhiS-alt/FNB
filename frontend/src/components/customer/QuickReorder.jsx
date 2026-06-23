@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 
@@ -10,7 +11,7 @@ function formatDate(dateStr) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
 }
 
-export default function QuickReorder({ orders, loading }) {
+function QuickReorder({ orders, loading }) {
   const navigate = useNavigate();
 
   if (loading) {
@@ -69,3 +70,7 @@ export default function QuickReorder({ orders, loading }) {
     </div>
   );
 }
+
+export default memo(QuickReorder, (prev, next) =>
+  prev.loading === next.loading && prev.orders?.length === next.orders?.length
+);

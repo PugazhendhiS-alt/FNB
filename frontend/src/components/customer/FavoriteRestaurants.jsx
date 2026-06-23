@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HeartIcon } from '@heroicons/react/24/outline';
 
-export default function FavoriteRestaurants({ restaurants = [], items = [], loading }) {
+function FavoriteRestaurants({ restaurants = [], items = [], loading }) {
   const navigate = useNavigate();
 
   if (loading) {
@@ -55,3 +56,7 @@ export default function FavoriteRestaurants({ restaurants = [], items = [], load
     </div>
   );
 }
+
+export default memo(FavoriteRestaurants, (prev, next) =>
+  prev.loading === next.loading && prev.restaurants?.length === next.restaurants?.length
+);
