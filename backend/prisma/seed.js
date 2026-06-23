@@ -39,11 +39,13 @@ async function main() {
   const restaurant2 = await buildRestaurant('Dosa Express', 'South Indian classics and filter coffee', 'South Indian', '+91-124-4567892', building1);
   const restaurant3 = await buildRestaurant('Roll & Wok', 'Asian fusion rolls and street food', 'Asian', '+91-22-6789013', building2);
 
+  const adminPassword = await bcrypt.hash('admin123', 10);
   const managerPassword = await bcrypt.hash('manager123', 10);
   const chefPassword = await bcrypt.hash('chef123', 10);
   const customerPassword = await bcrypt.hash('customer123', 10);
 
   const users = [
+    { username: 'admin1', email: 'admin1@pos.com', password: adminPassword, role: 'ADMIN' },
     { username: 'bldmgr1', email: 'bldmgr@pos.com', password: managerPassword, role: 'BUILDING_MANAGER', buildingId: building1.id },
     { username: 'restmgr1', email: 'restmgr@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant1.id },
     { username: 'restmgr2', email: 'restmgr2@pos.com', password: managerPassword, role: 'RESTAURANT_MANAGER', restaurantId: restaurant2.id },
@@ -134,7 +136,7 @@ async function main() {
 
   console.log('Seed completed successfully!');
   console.log('Superadmin created: username=Superadmin, password=Admin12345');
-  console.log('Sample users created with passwords: manager123, chef123, customer123');
+  console.log('Sample users created with passwords: admin123, manager123, chef123, customer123');
   console.log('Food Cards created for customers with PIN: 1234');
 }
 

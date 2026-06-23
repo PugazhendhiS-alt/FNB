@@ -60,6 +60,8 @@ async function main() {
   const customerPwd = await bcrypt.hash('customer123', 10);
   const adminPwd = await bcrypt.hash('admin123', 10);
 
+  const chefPwd = await bcrypt.hash('chef123', 10);
+
   const extraUsers = [
     { username: 'customer2', email: 'customer2@pos.com', role: 'CUSTOMER', phone: '+91-9876543221' },
     { username: 'customer3', email: 'customer3@pos.com', role: 'CUSTOMER', phone: '+91-9876543222' },
@@ -69,8 +71,10 @@ async function main() {
   for (const eu of extraUsers) {
     const exists = await prisma.user.findUnique({ where: { username: eu.username } });
     if (!exists) {
+      const password = eu.role === 'CHEF' ? chefPwd : customerPwd;
+      const { role, ...rest } = eu;
       await prisma.user.create({
-        data: { id: uuidv4(), password: customerPwd, ...eu },
+        data: { id: uuidv4(), password, role, ...rest },
       });
       console.log(`  User created: ${eu.username}`);
     } else {

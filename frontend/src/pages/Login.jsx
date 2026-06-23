@@ -29,7 +29,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpSent, setOtpSent] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
+  const [, setOtpCode] = useState('');
   const [isEmail, setIsEmail] = useState(true);
   const otpRefs = useRef([]);
 
@@ -340,13 +340,6 @@ export default function Login() {
                     </p>
                     <p className="text-xs text-primary-500 dark:text-primary-400 mt-0.5">Enter the 6-digit code below</p>
                   </div>
-                  {otpCode && (
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3 text-center">
-                      <p className="text-[10px] text-green-600 dark:text-green-400 font-medium uppercase tracking-wider">Dev Mode — OTP Code</p>
-                      <p className="text-2xl font-bold text-green-700 dark:text-green-300 tracking-[8px] mt-1">{otpCode}</p>
-                    </div>
-                  )}
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 text-center">
                       One-Time Password
@@ -436,11 +429,13 @@ export default function Login() {
             <p className="text-xs font-medium text-gray-500 mb-2">Demo Credentials:</p>
             <div className="space-y-1.5">
               <p className="text-xs text-gray-400"><span className="font-mono">Superadmin</span> / <span className="font-mono">Admin12345</span> <span className="text-gray-500">— Super Admin</span></p>
+              <p className="text-xs text-gray-400"><span className="font-mono">admin1</span> / <span className="font-mono">admin123</span> <span className="text-gray-500">— Admin</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">bldmgr1</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Building Manager</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">restmgr1</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Restaurant Manager</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">restmgr2</span> / <span className="font-mono">manager123</span> <span className="text-gray-500">— Restaurant Manager</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">chef1</span> / <span className="font-mono">chef123</span> <span className="text-gray-500">— Chef</span></p>
               <p className="text-xs text-gray-400"><span className="font-mono">customer1</span> / <span className="font-mono">customer123</span> <span className="text-gray-500">— Customer</span></p>
+              <p className="text-xs text-gray-400"><span className="font-mono">customer2</span> / <span className="font-mono">customer123</span> <span className="text-gray-500">— Customer</span></p>
             </div>
           </div>
         </div>

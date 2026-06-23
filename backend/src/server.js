@@ -2,6 +2,7 @@
 const express = require('express');
 const http = require('http');
 const cors = require('cors');
+const helmet = require('helmet');
 const { Server } = require('socket.io');
 const { setupSocket } = require('./socket');
 
@@ -31,7 +32,7 @@ function corsOrigin(origin, callback) {
   if (allowedOrigins) {
     return callback(null, allowedOrigins.includes(origin));
   }
-  const allowed = /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\..*|10\..*|172\.1[6-9]\..*|172\.2[0-9]\..*|172\.3[0-1]\..*)(:\d+)?$/.test(origin);
+  const allowed = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
   callback(null, allowed);
 }
 
@@ -44,11 +45,15 @@ const io = new Server(server, {
 
 app.set('io', io);
 
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
+}));
 app.use(cors({
   origin: corsOrigin,
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

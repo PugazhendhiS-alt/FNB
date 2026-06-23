@@ -40,7 +40,9 @@ async function sendOtpEmail(email, otp, username) {
       `,
     });
   }
-  console.log(`[OTP] Email: ${email}, Code: ${otp} (SMTP not configured - logged to console)`);
+  if (!process.env.SMTP_HOST) {
+    console.log(`[OTP] Email: ${email}, Code: ${otp} (SMTP not configured - logged to console)`);
+  }
 }
 
 module.exports = { sendOtpEmail };

@@ -79,11 +79,13 @@ async function createGuest(req, res, next) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
+      const crypto = require('crypto');
+      const bcrypt = require('bcryptjs');
       const guestUser = await tx.user.create({
         data: {
           username: `guest_${Date.now()}`,
           email: guestEmail || `guest_${Date.now()}@pos.local`,
-          password: '',
+          password: await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10),
           role: 'CUSTOMER',
           phone: guestPhone || null,
           isSuperadmin: false,

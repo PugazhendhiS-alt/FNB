@@ -25,6 +25,8 @@ dist-ssr
 
 # Environment
 .env
+.env.db
+.env.backend
 
 # Database
 *.db

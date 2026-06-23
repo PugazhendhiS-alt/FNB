@@ -16,8 +16,8 @@ A full-featured enterprise Point-of-Sale and restaurant management platform with
 │                     Backend (Node.js + Express)           │
 │  Port 5000 · Prisma ORM · JWT Auth · Socket.IO          │
 ├─────────────────────────────────────────────────────────┤
-│                     Database (SQLite)                     │
-│  backend/prisma/dev.db                                   │
+│                     Database (PostgreSQL)                  │
+│  Railway-managed or local Docker                        │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -213,8 +213,8 @@ A full-featured enterprise Point-of-Sale and restaurant management platform with
 |----------|----------|------|
 | Superadmin | Admin12345 | Super Admin |
 | admin1 | admin123 | Admin |
-| bldmgr1 | bldmgr123 | Building Manager |
-| restmgr1 | restmgr123 | Restaurant Manager |
+| bldmgr1 | manager123 | Building Manager |
+| restmgr1 | manager123 | Restaurant Manager |
 | chef1 | chef123 | Chef |
 | customer1 | customer123 | Customer |
 
@@ -257,7 +257,7 @@ Place screenshots in `docs/screenshots/`:
 |-------|-----------|
 | Frontend | React 18, Vite 5, Tailwind CSS 3, Headless UI 2, Heroicons 2 |
 | Backend | Node.js, Express.js, Prisma ORM, JWT (jsonwebtoken) |
-| Database | SQLite (dev) — swap to PostgreSQL for production |
+| Database | PostgreSQL |
 | Realtime | Socket.IO for order updates |
 | Auth | bcryptjs + JWT tokens (7-day expiry) |
 | Email | Nodemailer with SMTP configuration |

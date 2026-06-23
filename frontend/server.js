@@ -19,10 +19,23 @@ const MIME = {
   '.txt': 'text/plain',
 };
 
+const SECURITY_HEADERS = {
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Strict-Transport-Security': 'max-age=31536000; includeSubDomains',
+  'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https: http://localhost:* ws://localhost:*;",
+};
+
 http.createServer((req, res) => {
+  const setHeaders = (status, extraHeaders = {}) => {
+    res.writeHead(status, { ...SECURITY_HEADERS, ...extraHeaders });
+  };
+
   // Health check for Railway
   if (req.url === '/api/health') {
-    res.writeHead(200, { 'Content-Type': 'application/json' });
+    setHeaders(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }));
   }
 
@@ -34,15 +47,15 @@ http.createServer((req, res) => {
     if (err) {
       fs.readFile(path.join(dist, 'index.html'), (err2, data2) => {
         if (err2) {
-          res.writeHead(500);
+          setHeaders(500);
           return res.end('Internal Server Error');
         }
-        res.writeHead(200, { 'Content-Type': 'text/html' });
+        setHeaders(200, { 'Content-Type': 'text/html' });
         res.end(data2);
       });
       return;
     }
-    res.writeHead(200, { 'Content-Type': contentType });
+    setHeaders(200, { 'Content-Type': contentType });
     res.end(data);
   });
 }).listen(PORT, () => {

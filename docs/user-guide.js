@@ -325,8 +325,8 @@ p('The system includes pre-seeded demonstration accounts for all five user roles
 
 drawTable(['Role', 'Username', 'Password', 'Access Level'], [
   ['Super Admin', 'Superadmin', 'Admin12345', 'Full system access'],
-  ['Building Manager', 'bldmgr1', 'bldmgr123', 'Building oversight'],
-  ['Restaurant Manager', 'restmgr1', 'restmgr123', 'Outlet operations'],
+  ['Building Manager', 'bldmgr1', 'manager123', 'Building oversight'],
+  ['Restaurant Manager', 'restmgr1', 'manager123', 'Outlet operations'],
   ['Chef', 'chef1', 'chef123', 'Order processing'],
   ['Customer', 'customer1', 'customer123', 'Menu browsing & ordering'],
 ], [130, 90, 90, W - 320]);

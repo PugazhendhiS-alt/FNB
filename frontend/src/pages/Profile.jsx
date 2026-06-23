@@ -28,7 +28,6 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [pwSending, setPwSending] = useState(false);
-  const [devOtp, setDevOtp] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -75,7 +74,6 @@ export default function Profile() {
     setPwSending(true);
     try {
       const res = await authAPI.changePassword({ currentPassword });
-      if (res.data.otpCode) setDevOtp(res.data.otpCode);
       setPwStep('verify');
       toast.success('OTP sent to your email');
     } catch (err) {
@@ -97,7 +95,6 @@ export default function Profile() {
       setOtpCode('');
       setNewPassword('');
       setConfirmPassword('');
-      setDevOtp('');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to verify OTP');
     } finally {
@@ -177,19 +174,13 @@ export default function Profile() {
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">Password</h3>
             <p className="text-xs text-gray-400">Change your password with OTP verification</p>
           </div>
-          <Button variant="secondary" size="sm" onClick={() => { setPwOpen(!pwOpen); setPwStep('current'); setCurrentPassword(''); setOtpCode(''); setNewPassword(''); setConfirmPassword(''); setDevOtp(''); }}>
+          <Button variant="secondary" size="sm" onClick={() => { setPwOpen(!pwOpen); setPwStep('current'); setCurrentPassword(''); setOtpCode(''); setNewPassword(''); setConfirmPassword(''); }}>
             {pwOpen ? 'Cancel' : 'Change Password'}
           </Button>
         </div>
 
         {pwOpen && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4 space-y-4">
-            {devOtp && (
-              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-center">
-                <p className="text-xs text-green-700 dark:text-green-400 font-medium">Dev mode OTP: <span className="text-lg font-bold ml-1">{devOtp}</span></p>
-              </div>
-            )}
-
             {pwStep === 'current' && (
               <>
                 <Input label="Current Password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="Enter your current password" />

@@ -84,7 +84,7 @@ async function getQrCode(req, res, next) {
     const restaurant = await prisma.restaurant.findUnique({ where: { id: req.params.id }, select: { id: true, name: true } });
     if (!restaurant) return res.status(404).json({ message: 'Restaurant not found.' });
 
-    const frontendUrl = process.env.FRONTEND_URL || 'http://192.168.18.13:5173';
+    const frontendUrl = process.env.FRONTEND_URL || process.env.CLIENT_URL || 'http://localhost:5173';
     const menuUrl = `${frontendUrl}/menu/${restaurant.id}`;
 
     const qrDataUrl = await QRCode.toDataURL(menuUrl, {

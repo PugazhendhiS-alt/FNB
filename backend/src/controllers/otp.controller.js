@@ -28,10 +28,8 @@ async function sendOtp(req, res, next) {
 
     await Promise.all(deliveries);
 
-  const isDevMode = !process.env.SMTP_HOST && process.env.SMS_PROVIDER !== 'twilio';
-    const channels = email && phone ? 'email and mobile' : email ? 'email' : 'mobile';
+  const channels = email && phone ? 'email and mobile' : email ? 'email' : 'mobile';
     const response = { message: `OTP sent to your ${channels}.`, userId: user.id };
-    if (isDevMode) response.otpCode = code;
     res.json(response);
   } catch (err) {
     next(err);
@@ -69,12 +67,14 @@ async function guestLogin(req, res, next) {
     const { name, email, phone } = req.body;
     const username = `guest_${Date.now()}`;
     const guestEmail = email || `${username}@guest.pos`;
+    const tempPassword = require('crypto').randomBytes(16).toString('hex');
+    const hashedPassword = require('bcryptjs').hashSync(tempPassword, 10);
 
     const user = await prisma.user.create({
       data: {
         username,
         email: guestEmail,
-        password: '',
+        password: hashedPassword,
         role: 'CUSTOMER',
         phone: phone || null,
         isSuperadmin: false,

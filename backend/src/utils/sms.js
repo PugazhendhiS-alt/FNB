@@ -10,7 +10,8 @@ async function sendOtpSms(phone, otp, username) {
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     if (accountSid && authToken) {
       try {
-        const client = require('twilio')(accountSid, authToken);
+        const twilio = require('twilio');
+        const client = twilio(accountSid, authToken);
         await client.messages.create({
           body: `Your POS System OTP is: ${otp}. Valid for 10 minutes.`,
           from: process.env.TWILIO_PHONE || config.senderId,
@@ -18,13 +19,19 @@ async function sendOtpSms(phone, otp, username) {
         });
         return;
       } catch (err) {
-        console.error('[SMS] Twilio send failed:', err.message);
+        if (err.code === 'MODULE_NOT_FOUND') {
+          console.log('[SMS] Twilio package not installed. Install with: npm install twilio');
+        } else {
+          console.error('[SMS] Twilio send failed:', err.message);
+        }
       }
     }
   }
 
   if (config.provider === 'log' || !config.apiKey) {
-    console.log(`[SMS] To: ${phone}, OTP: ${otp}, User: ${username} (no SMS provider configured - logged to console)`);
+    if (!process.env.SMTP_HOST && !process.env.TWILIO_ACCOUNT_SID) {
+      console.log(`[SMS] To: ${phone}, OTP: ${otp}, User: ${username} (no SMS provider configured - logged to console)`);
+    }
   }
 }
 

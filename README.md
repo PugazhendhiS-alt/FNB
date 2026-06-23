@@ -25,7 +25,8 @@ npm install
 **backend/.env** (already configured for SQLite):
 ```
 DATABASE_URL="file:./dev.db"
-JWT_SECRET="super-secret-jwt-key-2024"
+# Generate a secure secret: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET="change-me-to-a-secure-random-secret"
 PORT=5000
 CLIENT_URL="http://localhost:3000"
 ```
@@ -67,7 +68,7 @@ Open **http://localhost:3000**
 |----------|----------|------|
 | Superadmin | Admin12345 | Super Admin |
 | admin1 | admin123 | Admin |
-| bldmgr1 | bldmgr123 | Building Manager |
-| restmgr1 | restmgr123 | Restaurant Manager |
+| bldmgr1 | manager123 | Building Manager |
+| restmgr1 | manager123 | Restaurant Manager |
 | chef1 | chef123 | Chef |
 | customer1 | customer123 | Customer |

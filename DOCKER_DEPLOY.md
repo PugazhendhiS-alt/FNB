@@ -30,12 +30,12 @@ docker-compose up --build -d
 
 ## Environment Variables
 
-Set in `docker-compose.yml`:
+Set in `.env.db` and `.env.backend` files (see `.env.example`):
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://pos_user:pos_password@db:5432/pos_system` |
-| `JWT_SECRET` | JWT signing secret | `super-secret-jwt-key-2024` |
+| `JWT_SECRET` | JWT signing secret (set via `.env.backend`) | — |
 | `PORT` | Backend port | `5000` |
 | `CLIENT_URL` | Allowed CORS origin | `http://localhost:5173` |
 | `VITE_API_URL` | API URL for frontend | `http://localhost:5000/api` |

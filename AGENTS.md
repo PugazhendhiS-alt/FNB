@@ -56,7 +56,8 @@ npm run dev      # starts on port 3000
 ### Local .env (backend/.env)
 ```
 DATABASE_URL="postgresql://pos_user:pos_password@localhost:5432/pos_system"
-JWT_SECRET="super-secret-jwt-key-2024"
+# Generate a secure secret: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+JWT_SECRET="change-me-to-a-secure-random-secret"
 PORT=5000
 CLIENT_URL="http://localhost:3000"
 ```
@@ -98,7 +99,7 @@ pos-system/
 | chef1 | chef123 | Chef |
 | customer1 | customer123 | Customer |
 | customer2 | customer123 | Customer |
-| chef2 | customer123 | Chef |
+| chef2 | chef123 | Chef |
 
 ## Key Tech
 - **Frontend**: React 18, Vite 5, Tailwind CSS 3, Headless UI 2

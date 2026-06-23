@@ -305,7 +305,7 @@ drawTable(['Endpoint', 'Method', 'Auth', 'Description'], [
 ], [170, 60, 40, W - 280]);
 
 h3('Login \u2014 Sample Request/Response');
-codeBlock(['POST /api/auth/login', 'Request: { "username": "restmgr1", "password": "restmgr123" }', 'Response: { "token": "<JWT>", "user": { "id": 2, "username": "restmgr1",', '  "role": "RESTAURANT_MANAGER", "isSuperadmin": false } }', 'Error: 401 { "message": "Invalid credentials" }']);
+codeBlock(['POST /api/auth/login', 'Request: { "username": "restmgr1", "password": "manager123" }', 'Response: { "token": "<JWT>", "user": { "id": 2, "username": "restmgr1",', '  "role": "RESTAURANT_MANAGER", "isSuperadmin": false } }', 'Error: 401 { "message": "Invalid credentials" }']);
 
 h2('Order Endpoints');
 drawTable(['Endpoint', 'Method', 'Auth', 'Description'], [
