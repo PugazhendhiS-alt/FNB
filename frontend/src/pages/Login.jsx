@@ -38,25 +38,29 @@ export default function Login() {
   const { login, sendOtp, verifyOtp, guestLogin } = useAuth();
   const navigate = useNavigate();
 
-  function validate(field) {
+  function validate(field, overrides = {}) {
     const errs = { ...errors };
+    const u = overrides.username !== undefined ? overrides.username : username;
+    const p = overrides.password !== undefined ? overrides.password : password;
+    const e = overrides.email !== undefined ? overrides.email : email;
+    const m = overrides.mobile !== undefined ? overrides.mobile : mobile;
     if (!field || field === 'username') {
-      if (!username.trim()) errs.username = 'Username is required';
+      if (!u.trim()) errs.username = 'Username is required';
       else delete errs.username;
     }
     if (!field || field === 'password') {
-      if (!password) errs.password = 'Password is required';
-      else if (password.length < 6) errs.password = 'Password must be at least 6 characters';
+      if (!p) errs.password = 'Password is required';
+      else if (p.length < 6) errs.password = 'Password must be at least 6 characters';
       else delete errs.password;
     }
     if (!field || field === 'email') {
-      if (!email.trim()) errs.email = 'Email is required';
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = 'Enter a valid email address';
+      if (!e.trim()) errs.email = 'Email is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim())) errs.email = 'Enter a valid email address';
       else delete errs.email;
     }
     if (!field || field === 'mobile') {
-      if (!mobile.trim()) errs.mobile = 'Phone number is required';
-      else if (mobile.length < 10) errs.mobile = 'Enter a valid 10-digit phone number';
+      if (!m.trim()) errs.mobile = 'Phone number is required';
+      else if (m.length < 10) errs.mobile = 'Enter a valid 10-digit phone number';
       else delete errs.mobile;
     }
     setErrors(errs);
@@ -70,12 +74,12 @@ export default function Login() {
 
   function handleUsernameChange(val) {
     setUsername(val);
-    if (touched.username) validate('username');
+    if (touched.username) validate('username', { username: val });
   }
 
   function handlePasswordChange(val) {
     setPassword(val);
-    if (touched.password) validate('password');
+    if (touched.password) validate('password', { password: val });
   }
 
   const handleLogin = async (e) => {
