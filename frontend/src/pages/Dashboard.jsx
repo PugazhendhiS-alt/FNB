@@ -1,6 +1,7 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRole } from '../hooks/useRole';
+import { useSocket } from '../context/SocketContext';
 import Badge from '../components/ui/Badge';
 import PageHeader from '../components/ui/PageHeader';
 import KPIGrid from '../components/dashboard/KPIGrid';
@@ -30,12 +31,22 @@ export default function Dashboard() {
   const [sectionLoading, setSectionLoading] = useState(true);
   const { isSuperadmin, currentRole, isCustomer } = useRole();
   const navigate = useNavigate();
+  const { socket } = useSocket();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const hasLoaded = useRef(false);
+
+  useEffect(() => {
+    if (!socket) return;
+    const handler = () => setRefreshKey(k => k + 1);
+    socket.on('dashboard-update', handler);
+    return () => socket.off('dashboard-update', handler);
+  }, [socket]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function loadMetrics() {
-      setKpiLoading(true);
+      if (!hasLoaded.current) setKpiLoading(true);
       try {
         const res = await widgetAPI.getWidgets();
         if (cancelled) return;
@@ -66,7 +77,8 @@ export default function Dashboard() {
       }
     }
 
-      async function loadSectionData() {
+    async function loadSectionData() {
+      if (!hasLoaded.current) setSectionLoading(true);
       try {
         const res = await dashboardAPI.getSectionData();
         if (!cancelled && res.data) {
@@ -83,14 +95,17 @@ export default function Dashboard() {
       } catch {
         // silent - use defaults
       } finally {
-        if (!cancelled) setSectionLoading(false);
+        if (!cancelled) {
+          setSectionLoading(false);
+          hasLoaded.current = true;
+        }
       }
     }
 
     loadMetrics();
     loadSectionData();
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshKey]);
 
   if (isCustomer) {
     return <CustomerDashboard />;

@@ -1,7 +1,7 @@
 ﻿const { PrismaClient } = require('@prisma/client');
 const { v4: uuidv4 } = require('uuid');
 const { generateQRData } = require('../utils/helpers');
-const { emitOrderUpdate, emitNotification, emitStaffNotification } = require('../socket');
+const { emitOrderUpdate, emitNotification, emitStaffNotification, emitDashboardUpdate } = require('../socket');
 
 const prisma = new PrismaClient();
 
@@ -54,6 +54,7 @@ async function processPayment(req, res, next) {
 
       const io = req.app.get('io');
       emitOrderUpdate(io, orderId, { ...updated, notification });
+      emitDashboardUpdate(io, 'payment_success', { restaurantId: order.restaurantId });
       emitNotification(io, order.customerId, notification);
 
       const staffUsers = await prisma.user.findMany({
@@ -88,6 +89,7 @@ async function processPayment(req, res, next) {
       });
 
       emitOrderUpdate(req.app.get('io'), orderId, { id: orderId, status: 'PAYMENT_FAILED', restaurantId: order.restaurantId });
+      emitDashboardUpdate(req.app.get('io'), 'payment_failed', { restaurantId: order.restaurantId });
 
       res.json({ success: false, message: 'Payment failed. Please try again.' });
     }

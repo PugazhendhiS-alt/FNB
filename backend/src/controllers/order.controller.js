@@ -1,6 +1,6 @@
 ﻿const { PrismaClient } = require('@prisma/client');
 const { generateOrderCode, generateQRData, calculateTotal } = require('../utils/helpers');
-const { emitOrderUpdate, emitNotification } = require('../socket');
+const { emitOrderUpdate, emitNotification, emitDashboardUpdate } = require('../socket');
 
 const prisma = new PrismaClient();
 
@@ -127,6 +127,7 @@ async function createGuest(req, res, next) {
     });
 
     emitOrderUpdate(req.app.get('io'), result.order.id, result.order);
+    emitDashboardUpdate(req.app.get('io'), 'order_created', { restaurantId: result.order.restaurantId });
 
     res.status(201).json(result);
   } catch (err) {
@@ -181,6 +182,7 @@ async function create(req, res, next) {
     });
 
     emitOrderUpdate(req.app.get('io'), order.id, order);
+    emitDashboardUpdate(req.app.get('io'), 'order_created', { restaurantId: order.restaurantId });
 
     res.status(201).json(order);
   } catch (err) {
@@ -227,6 +229,7 @@ async function updateStatus(req, res, next) {
 
     const io = req.app.get('io');
     emitOrderUpdate(io, id, updated);
+    emitDashboardUpdate(io, 'order_status_changed', { restaurantId: updated.restaurantId, status });
 
     if (status === 'PREPARING' || status === 'COMPLETED' || status === 'DELIVERED') {
       const notificationMessages = {

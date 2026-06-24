@@ -51,8 +51,13 @@ export default function CustomerDashboard() {
   useEffect(() => {
     if (!socket) return;
     const handler = () => { loadDashboard(true); };
+    const dashHandler = () => { loadDashboard(true); };
     socket.on('order-status-changed', handler);
-    return () => socket.off('order-status-changed', handler);
+    socket.on('dashboard-update', dashHandler);
+    return () => {
+      socket.off('order-status-changed', handler);
+      socket.off('dashboard-update', dashHandler);
+    };
   }, [socket, loadDashboard]);
 
   const handleTopUp = async (amount) => {

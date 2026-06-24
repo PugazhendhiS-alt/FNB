@@ -59,4 +59,8 @@ function emitStaffNotification(io, restaurantId, notification) {
   io.to(`restaurant:${restaurantId}`).emit('new-notification', notification);
 }
 
-module.exports = { setupSocket, emitOrderUpdate, emitNotification, emitStaffNotification };
+function emitDashboardUpdate(io, eventType, scope = {}) {
+  io.emit('dashboard-update', { type: eventType, timestamp: Date.now(), ...scope });
+}
+
+module.exports = { setupSocket, emitOrderUpdate, emitNotification, emitStaffNotification, emitDashboardUpdate };
